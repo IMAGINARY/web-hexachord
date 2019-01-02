@@ -1,0 +1,54 @@
+/*Author: Corentin Guichaoua */
+
+html, body {
+    margin: 5px;
+    padding: 0;
+}
+
+circle {
+    fill : white;
+    stroke: black;
+}
+
+line {
+    stroke : black;
+}
+
+polygon {
+    fill : white;
+}
+
+text {
+    text-anchor: middle;
+    alignment-baseline: central;
+}
+
+.activeButton {
+    background-color : green;
+    color : white;
+}
+
+.tonnetz {
+    user-select: none;
+    -moz-user-select: none;
+    -khtml-user-select: none;
+    -webkit-user-select: none;
+    -o-user-select: none;
+}
+
+.active {
+    background-color : red;
+  }
+
+.activeNode {
+    fill : yellow;
+}
+
+.activeDichord {
+    /*stroke : yellow;*/
+    stroke-width : 3;
+}
+
+.activeTrichord {
+    fill : green;
+} 

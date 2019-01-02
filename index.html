@@ -1,0 +1,54 @@
+<!-- Author: Corentin Guichaoua-->
+
+<html>
+    <head>
+        <link rel="stylesheet" href="index.css">
+        <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/jzz"></script>
+        <script src="https://jazz-soft.net//script/MIDI.js"></script>
+        <script src="https://jazz-soft.net//script/JZZ.synth.MIDIjs.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/jzz-synth-osc"></script>
+        <script src="https://cdn.jsdelivr.net/npm/jzz-input-kbd"></script>
+        <script src="https://cdn.jsdelivr.net/npm/jzz-midi-smf"></script>
+
+    </head>
+    <body><p><div id=piano></div></p>
+        <div id="proto">
+            <p>
+                From file: <input type=file id=file size=80 v-on:change='fromFile();'>
+            </p>
+            <p>from URL:
+            <form v-on:submit='fromURL(); return false;'>
+                <p>
+                    <input type=text id=url value='https://jazz-soft.net/demo/midi/furelise.mid' size=80>
+                    <input type=submit value=Submit...>
+                </p>
+            </form>
+            </p>
+            <p>
+                from Base64 string: <button v-on:click='fromBase64();'>Read...</button>
+            </p> 
+
+            <button id=btn v-on:click='playStop' disabled> {{ buttonText }} </button>
+            <p> {{ loadlog }}</p>
+            
+            <button v-for="tonnetz in tonnetze" v-on:click="intervals=tonnetz" v-bind:class="{activeButton:tonnetz==intervals}">
+                {{ tonnetz }}
+            </button>
+
+            <br/>
+
+            <button v-for="note in notes" v-on:click="note.count=1-note.count" v-bind:class="{activeButton:note.count>0}">
+                {{ note.text }}
+            </button> 
+            <br/>
+            <tonnetz-plan v-bind:notes="notes" v-bind:height="400" v-bind:width="600" v-bind:intervals="intervals"></tonnetz-plan>
+            <!--<tonnetz-plan v-bind:notes="notes" v-bind:height="400" v-bind:width="600" v-bind:intervals="[2,3,7]"></tonnetz-plan>
+            -->
+
+        </div>
+
+        <script src="index.js"></script>
+
+    </body>
+</html>
