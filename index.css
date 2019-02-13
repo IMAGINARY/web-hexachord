@@ -5,6 +5,27 @@ html, body {
     padding: 0;
 }
 
+h1 {
+    text-align: center;
+}
+
+h2 {
+    text-align: center;
+    color: grey;
+}
+
+.column {
+    float: left;
+}
+  
+.left {
+    width: 70%;
+}
+
+.right {
+    width: 30%;
+}
+
 circle {
     fill : white;
     stroke: black;
