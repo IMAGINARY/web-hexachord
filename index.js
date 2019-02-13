@@ -70,7 +70,7 @@ var activableMixin = {
     }
 }
 
-
+// Note component : a clickable circle with the note name
 Vue.component('note-node',{
     mixins: [click2PlayMixin,activableMixin],
     props: ['notes','nodes','id'],
@@ -88,7 +88,7 @@ Vue.component('note-node',{
         v-on:mousedown="clickOn()" 
         v-on:mouseup="clickOff()"
         v-on:mouseleave="clickOff()">
-            <circle v-bind:class="{activeNode:isActive}" 
+            <circle v-bind:class="{activeNode:isActive}"
                 v-bind:cx="x" v-bind:cy="y" r="12">
             </circle> 
             <text v-bind:x="x" v-bind:y="y">
@@ -98,6 +98,7 @@ Vue.component('note-node',{
         `
 })
 
+// Dichord component : a clickable line between the two notes that it contains, with a small circle for easier clicking
 Vue.component('dichord',{
     mixins: [click2PlayMixin,activableMixin],
     props: ['notes','nodes'],
@@ -128,9 +129,10 @@ Vue.component('dichord',{
                 v-bind:cx="center.x" v-bind:cy="center.y" r="2">
         </circle> 
     </g>
-        `
+    `
 })
 
+// Trichord component : a clickable triangle between the three notes that it contains
 Vue.component('trichord',{
     mixins: [click2PlayMixin,activableMixin],
     props: ['notes','nodes'],
@@ -153,6 +155,7 @@ Vue.component('trichord',{
         `
 })
 
+// The Tonnetz component : A large component that contains the drawing of the Tonnetz and controls to drag it around
 Vue.component('tonnetz-plan',{
     props: {
         height: Number,
@@ -267,7 +270,7 @@ Vue.component('tonnetz-plan',{
             for (var nodeIt of nodes){
                 var pitch=81-nodeIt.x*this.intervals[0]+nodeIt.y*(this.intervals[2]-12);
                 piano.noteOff(0,pitch,100);
-        }
+            }
         }
     },
     template: `
@@ -310,6 +313,9 @@ const logicalToSvgX = node => node.x * xstep * baseSize;
 const logicalToSvgY = node => (node.y + node.x/2) * baseSize;
 
 // ----------------------- Chicken Wire ---------------------------
+// TODO: Lots of duplicated code: factorize !
+
+// The chicken-wire's trichord component : a clickable circle representing the chord
 Vue.component('trichord-chicken',{
     mixins: [click2PlayMixin,activableMixin],
     props: ['notes','nodes','id'],
@@ -322,6 +328,7 @@ Vue.component('trichord-chicken',{
         },
         text: function(){
             //Is this a major or minor chord ?
+            //TODO: This is more than just minor or major, we have to clarify
             var major = (this.nodes[0].y == this.nodes[1].y);
             if (major){
                 return this.notes[2].text;
@@ -347,6 +354,8 @@ Vue.component('trichord-chicken',{
         `
 })
 
+// The chicken-wire's dichord component: a line between the two trichords that contain the same notes,
+// with a small circle for easier clicking
 Vue.component('dichord-chicken',{
     mixins: [click2PlayMixin,activableMixin],
     props: ['notes','nodes'],
@@ -394,6 +403,7 @@ Vue.component('dichord-chicken',{
     `
 })
 
+// The chicken-wire's note component: A clickable hexagon located between all the chords that use that note
 Vue.component('note-chicken',{
     mixins: [click2PlayMixin,activableMixin],
     props: ['notes','nodes'],
@@ -428,6 +438,7 @@ Vue.component('note-chicken',{
         `
 })
 
+// The chicken-wire's main component: handles the layout and structure
 Vue.component('chicken-wire',{
     props: {
         height: Number,
@@ -543,7 +554,7 @@ Vue.component('chicken-wire',{
                 var pitch=81-nodeIt.x*this.intervals[0]+nodeIt.y*(this.intervals[2]-12);
                 piano.noteOff(0,pitch,100);
             }
-    }
+        }
     },
     template: `
         <svg id="svg" class="tonnetz" 
@@ -579,7 +590,7 @@ Vue.component('chicken-wire',{
 
 })
 
-
+// The App's main object, handling global concerns
 var proto = new Vue({
     el: '#proto',
     data: {
@@ -620,7 +631,7 @@ var proto = new Vue({
             soundfontUrl: "https://raw.githubusercontent.com/mudcube/MIDI.js/master/examples/soundfont/", 
             instrument: "acoustic_grand_piano" })
                 .or(function(){ proto.loaded(); alert('Cannot load MIDI.js!\n' + this.err()); })
-                .and(function(){ proto.loaded(); }),  
+                .and(function(){ proto.loaded(); }),
         ascii: JZZ.input.ASCII({//TODO: Adapt to keyboard layout
                 W:'C5', S:'C#5', X:'D5', D:'D#5', C:'E5', V:'F5',
                 G:'F#5', B:'G5', H:'Ab5', N:'A5', J:'Bb5', M:'B5'
@@ -641,9 +652,9 @@ var proto = new Vue({
     },
     created: function(){
         this.ascii.connect(piano);
-        this.keyboard.connect(piano)
+        this.keyboard.connect(piano);
         piano.connect(this.synth);
-        piano.connect(this.midiHandler)   
+        piano.connect(this.midiHandler);   
     },
     methods:{
         midiHandler: function (event){
@@ -742,12 +753,7 @@ var proto = new Vue({
 
 })
 
-
-
-
-
-
-// Mary had a little lamb
+// Example date : 'Mary had a little lamb'
 var data = '\
 TVRoZAAAAAYAAQADAGRNVHJrAAAAGgD/AwtMaXR0bGUgTGFtYgD/UQMKLCsA/y8ATVRyawAAAPIA/wMF\
 V29yZHMA/wEYQFRNYXJ5IFdhcyBBIExpdHRsZSBMYW1lZP8BA1xNYTL/AQNyeSAy/wEEd2FzIDL/AQJh\
