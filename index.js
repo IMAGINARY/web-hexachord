@@ -21,32 +21,69 @@ function* range (begin, end, interval = 1) {
     }
 }
 
+
+// Provides MIDI playback on click
+// Must still bind the clickOn and clickOff methods in the template
+var click2PlayMixin = {
+    props: ['noteOn','noteOff','nodes'],
+    data: function (){return{
+        clicked: false
+    }},
+    methods:{
+        clickOn: function(){
+            this.noteOn(this.nodes);
+            this.clicked=true;
+        },
+        clickOff: function(){
+            if(this.clicked){
+                this.noteOff(this.nodes);
+                this.clicked=false;
+            }
+        }
+    }
+}
+
+// Provides the isActive check
+// Must still be used in the template to have any effect
+var activableMixin = {
+    props: ['notes'],
+    computed: {
+        isActive : function(){
+            return this.notes.every(elem => elem.count > 0);
+        }
+    }
+}
+
+
 Vue.component('note-node',{
-    props: ['note','node'],
+    mixins: [click2PlayMixin,activableMixin],
+    props: ['notes','nodes','id'],
     computed: {
         x : function (){
-            return this.node.x * xstep * baseSize;
+            return this.nodes[0].x * xstep * baseSize;
         },
         y : function (){
-            return (this.node.y + this.node.x/2) * baseSize;
-        },
-        isActive : function(){
-            return this.note.count > 0;
+            return (this.nodes[0].y + this.nodes[0].x/2) * baseSize;
         }
     },
+    //TODO: Find a way to auto insert the mouse events
     template: `
-        <g>
+        <g v-bind:id="id" 
+        v-on:mousedown="clickOn()" 
+        v-on:mouseup="clickOff()"
+        v-on:mouseleave="clickOff()">
             <circle v-bind:class="{activeNode:isActive}" 
                 v-bind:cx="x" v-bind:cy="y" r="12">
             </circle> 
             <text v-bind:x="x" v-bind:y="y">
-                {{ note.text }}
+                {{ notes[0].text }}
             </text>
         </g>
         `
 })
 
 Vue.component('dichord',{
+    mixins: [click2PlayMixin,activableMixin],
     props: ['notes','nodes'],
     computed: {
         coords: function (){
@@ -57,19 +94,29 @@ Vue.component('dichord',{
                 y2 : (this.nodes[1].y + this.nodes[1].x/2) * baseSize
             }
         },
-        isActive: function(){
-            //return this.notes[0].isActive && this.notes[1].isActive;
-            return this.notes.every(elem => elem.count > 0);
+        center: function (){
+            return {
+                x: (this.coords.x1 + this.coords.x2)/2,
+                y: (this.coords.y1 + this.coords.y2)/2
+            }
         }
     },
     template: `
+    <g v-on:mousedown="clickOn()" 
+        v-on:mouseup="clickOff()" 
+        v-on:mouseleave="clickOff()">
         <line v-bind:class="{activeDichord:isActive}" 
             v-bind="coords">
         </line> 
+        <circle v-bind:class="{activeDichord:isActive}"
+                v-bind:cx="center.x" v-bind:cy="center.y" r="2">
+        </circle> 
+    </g>
         `
 })
 
 Vue.component('trichord',{
+    mixins: [click2PlayMixin,activableMixin],
     props: ['notes','nodes'],
     computed: {
         coords: function (){
@@ -79,15 +126,14 @@ Vue.component('trichord',{
         },
         points: function (){
             return this.coords.map( ({x,y}) => `${x},${y}` ).join(' ')
-        },
-        isActive: function(){
-            //return this.notes[0].isActive && this.notes[1].isActive;
-            return this.notes.every(elem => elem.count > 0);
         }
     },
     template: `
         <polygon v-bind:class="{activeTrichord:isActive}" 
-            v-bind:points="points"/>
+            v-bind:points="points"
+            v-on:mousedown="clickOn()" 
+            v-on:mouseup="clickOff()" 
+            v-on:mouseleave="clickOff()"/>
         `
 })
 
@@ -192,6 +238,20 @@ Vue.component('tonnetz-plan',{
         },
         genKey: function (n){
             return n.map(function textify(node){return `${node.x},${node.y}`}).join(' ')
+        },
+        noteOn: function(nodes){
+            //var notes = this.node2Notes(nodes);
+            for (var nodeIt of nodes){
+                var pitch=81-nodeIt.x*this.intervals[0]+nodeIt.y*(this.intervals[2]-12);
+                piano.noteOn(0,pitch,100);
+            }
+        },
+        noteOff: function(nodes){
+            //var notes = this.node2Notes(nodes);
+            for (var nodeIt of nodes){
+                var pitch=81-nodeIt.x*this.intervals[0]+nodeIt.y*(this.intervals[2]-12);
+                piano.noteOff(0,pitch,100);
+        }
         }
     },
     template: `
@@ -207,15 +267,21 @@ Vue.component('tonnetz-plan',{
                 <trichord v-for="n in trichordList"
                     v-bind:key="genKey(n)"
                     v-bind:notes="node2Notes(n)"
-                    v-bind:nodes="n"/>
+                    v-bind:nodes="n"
+                    v-bind:noteOn="noteOn"
+                    v-bind:noteOff="noteOff"/>
                 <dichord v-for="n in dichordList"
                     v-bind:key="genKey(n)"
                     v-bind:notes="node2Notes(n)"
-                    v-bind:nodes="n"/>
+                    v-bind:nodes="n"
+                    v-bind:noteOn="noteOn"
+                    v-bind:noteOff="noteOff"/>
                 <note-node v-for="n in nodeList" 
                     v-bind:key="genKey([n])"
-                    v-bind:note="node2Notes([n])[0]"
-                    v-bind:node="n"/>
+                    v-bind:notes="node2Notes([n])"
+                    v-bind:nodes="[n]"
+                    v-bind:noteOn="noteOn"
+                    v-bind:noteOff="noteOff"/>
             </g>
         </svg>
     `
