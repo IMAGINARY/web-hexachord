@@ -21,8 +21,12 @@
                     {{ tonnetz }}
                 </button>
                 <br/>
+                <button v-for="tonnetz in tonnetze" v-on:click="(intervals=tonnetz) ^ (type='chicken')" v-bind:class="{activeButton:tonnetz==intervals && type=='chicken'}">
+                    {{ tonnetz }}
+                </button>
                 <br/>
                 <tonnetz-plan v-if="type=='tonnetz'" v-bind:notes="notes" v-bind:height="400" v-bind:width="600" v-bind:intervals="intervals"></tonnetz-plan>
+                <chicken-wire v-else v-bind:notes="notes" v-bind:height="400" v-bind:width="600" v-bind:intervals="intervals"></chickenwire>
                 <br/>
                 
             </div>
@@ -31,22 +35,22 @@
                 <button id=btn v-on:click='playStop' disabled> {{ buttonText }} </button>
                 <p> {{ loadlog }}</p>
 
-            <p>
-                    From file: <input type=file id=file size=40 v-on:change='fromFile();'>
-            </p>
-            <p>from URL:
-            <form v-on:submit='fromURL(); return false;'>
                 <p>
-                    <input type=text id=url value='https://jazz-soft.net/demo/midi/furelise.mid' size=80>
-                    <input type=submit value=Submit...>
+                    From file: <input type=file id=file size=40 v-on:change='fromFile();'>
                 </p>
-            </form>
-            </p>
-            <p>
-                from Base64 string: <button v-on:click='fromBase64();'>Read...</button>
-            </p> 
+                <p>from URL:
+                <form v-on:submit='fromURL(); return false;'>
+                    <p>
+                        <input type=text id=url value='https://jazz-soft.net/demo/midi/furelise.mid' size=80>
+                        <input type=submit value=Submit...>
+                    </p>
+                </form>
+                </p>
+                <p>
+                    from Base64 string: <button v-on:click='fromBase64();'>Read...</button>
+                </p>
             </div> 
-
+            
             <br/>
             <button v-for="note in notes" v-on:click="note.count=1-note.count" v-bind:class="{activeButton:note.count>0}">
                 {{ note.text }}
