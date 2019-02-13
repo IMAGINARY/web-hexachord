@@ -108,6 +108,7 @@ Vue.component('tonnetz-plan',{
         captureMouse: false,
         clickedPos: {x:0,y:0},
         //size: {height: baseSize*10, width: baseSize*10},
+        //TODO: Set max scale factor according to dimensions
         scaleBounds: {mini:1,maxi:5}
     }},
     computed: {
@@ -274,14 +275,17 @@ var proto = new Vue({
         loadlog: "*** MIDI.js is loading soundfont... ***",
         
         synth: JZZ.synth.MIDIjs({ 
+            //TODO: Use a soundfont from our own server
             soundfontUrl: "https://raw.githubusercontent.com/mudcube/MIDI.js/master/examples/soundfont/", 
             instrument: "acoustic_grand_piano" })
                 .or(function(){ proto.loaded(); alert('Cannot load MIDI.js!\n' + this.err()); })
                 .and(function(){ proto.loaded(); }),  
-        ascii: JZZ.input.ASCII({
+        ascii: JZZ.input.ASCII({//TODO: Adapt to keyboard layout
                 W:'C5', S:'C#5', X:'D5', D:'D#5', C:'E5', V:'F5',
                 G:'F#5', B:'G5', H:'Ab5', N:'A5', J:'Bb5', M:'B5'
                 }),
+        
+        //TODO: Ask which Midi controller to use instead of blindly picking the first
         keyboard: JZZ().openMidiIn(),
         player: JZZ.MIDI.SMF().player()
     },
@@ -344,6 +348,7 @@ var proto = new Vue({
             }
         },
         fromFile: function () {
+            //TODO: Fix multichannel Midi reading
             if (window.FileReader) {
                 this.clear();
                 var reader = new FileReader();
