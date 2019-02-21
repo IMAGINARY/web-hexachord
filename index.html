@@ -8,6 +8,7 @@
         <script src="https://jazz-soft.net//script/MIDI.js"></script>
         <script src="https://jazz-soft.net//script/JZZ.synth.MIDIjs.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/jzz-synth-osc"></script>
+        <script src="https://jazz-soft.net/script/JZZ.synth.Tiny.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/jzz-input-kbd"></script>
         <script src="https://cdn.jsdelivr.net/npm/jzz-midi-smf"></script>
 
@@ -17,11 +18,11 @@
         <h2>One key — Many Representations</h2>
         <div id="proto">
             <div class="column" style="text-align:center;">
-                <button v-for="tonnetz in tonnetze" v-on:click="(intervals=tonnetz) ^ (type='tonnetz')" v-bind:class="{activeButton:tonnetz==intervals && type=='tonnetz'}">
+                <button v-for="tonnetz in tonnetze" v-on:click="(intervals=tonnetz) ^ (type='tonnetz')" v-bind:class="{activeButton:arrayEquals(tonnetz,intervals) && type=='tonnetz'}">
                     {{ tonnetz }}
                 </button>
                 <br/>
-                <button v-for="tonnetz in tonnetze" v-on:click="(intervals=tonnetz) ^ (type='chicken')" v-bind:class="{activeButton:tonnetz==intervals && type=='chicken'}">
+                <button v-for="tonnetz in tonnetze" v-on:click="(intervals=tonnetz) ^ (type='chicken')" v-bind:class="{activeButton:arrayEquals(tonnetz,intervals) && type=='chicken'}">
                     {{ tonnetz }}
                 </button>
                 <br/>

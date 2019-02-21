@@ -169,7 +169,7 @@ Vue.component('tonnetz-plan',{
     data: function(){return {
         tx : 0,
         ty : 0,
-        scale: 1,
+        scale: 2,
         captureMouse: false,
         clickedPos: {x:0,y:0},
         //size: {height: baseSize*10, width: baseSize*10},
@@ -221,7 +221,7 @@ Vue.component('tonnetz-plan',{
             return nodes.map(node => this.notes[mod(-node.x*this.intervals[0]+node.y*this.intervals[2],12)])
         },
         zoomInOut: function (wheelEvent){
-            var multiplier = Math.exp(wheelEvent.wheelDelta/600)
+            var multiplier = Math.exp(-wheelEvent.deltaY/600)
             // Bound the multiplier to acceptable values
             multiplier = bound(multiplier,this.scaleBounds.mini/this.scale,
                                           this.scaleBounds.maxi/this.scale);
@@ -452,7 +452,7 @@ Vue.component('chicken-wire',{
     data: function(){return {
         tx : 0,
         ty : 0,
-        scale: 1,
+        scale: 2.5,
         captureMouse: false,
         clickedPos: {x:0,y:0},
         //size: {height: baseSize*10, width: baseSize*10},
@@ -503,8 +503,9 @@ Vue.component('chicken-wire',{
         node2Notes: function (nodes){
             return nodes.map(node => this.notes[mod(-node.x*this.intervals[0]+node.y*this.intervals[2],12)])
         },
+        //TODO: Fix zoom on firefox
         zoomInOut: function (wheelEvent){
-            var multiplier = Math.exp(wheelEvent.wheelDelta/600)
+            var multiplier = Math.exp(-wheelEvent.deltaY/600)
             // Bound the multiplier to acceptable values
             multiplier = bound(multiplier,this.scaleBounds.mini/this.scale,
                                           this.scaleBounds.maxi/this.scale);
@@ -609,7 +610,7 @@ var proto = new Vue({
             [4,4,4]
         ],
         intervals: [3,4,5],
-        type: 'Tonnetz',
+        type: 'tonnetz',
         notes: [
             {text: 'A',  count:0},
             {text: 'Bb', count:0},
@@ -625,13 +626,13 @@ var proto = new Vue({
             {text: 'G#', count:0}
         ],
         loadlog: "*** MIDI.js is loading soundfont... ***",
-        
-        synth: JZZ.synth.MIDIjs({ 
+        //TODO: Find a way to have nice output on Safari and Firefox
+        synth: JZZ.synth.Tiny(),//JZZ.synth.MIDIjs({ 
             //TODO: Use a soundfont from our own server
-            soundfontUrl: "https://raw.githubusercontent.com/mudcube/MIDI.js/master/examples/soundfont/", 
-            instrument: "acoustic_grand_piano" })
-                .or(function(){ proto.loaded(); alert('Cannot load MIDI.js!\n' + this.err()); })
-                .and(function(){ proto.loaded(); }),
+            //soundfontUrl: "https://raw.githubusercontent.com/mudcube/MIDI.js/master/examples/soundfont/", 
+            //instrument: "acoustic_grand_piano" })
+                //.or(function(){ proto.loaded(); alert('Cannot load MIDI.js!\n' + this.err()); })
+                //.and(function(){ proto.loaded(); }),
         ascii: JZZ.input.ASCII({//TODO: Adapt to keyboard layout
                 W:'C5', S:'C#5', X:'D5', D:'D#5', C:'E5', V:'F5',
                 G:'F#5', B:'G5', H:'Ab5', N:'A5', J:'Bb5', M:'B5'
@@ -657,6 +658,16 @@ var proto = new Vue({
         piano.connect(this.midiHandler);   
     },
     methods:{
+        arrayEquals: function (a, b) {
+            if (a === b) return true;
+            if (a == null || b == null) return false;
+            if (a.length != b.length) return false;
+        
+            for (var i = 0; i < a.length; ++i) {
+              if (a[i] !== b[i]) return false;
+            }
+            return true;
+        },
         midiHandler: function (event){
             noteIndex = (event.getNote()+3) %12
             if(event.isNoteOn()){
