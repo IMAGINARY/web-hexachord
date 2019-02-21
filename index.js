@@ -344,7 +344,7 @@ Vue.component('trichord-chicken',{
         v-on:pointerdown="clickOn()" 
         v-on:pointerup="clickOff()"
         v-on:pointerleave="clickOff()">
-            <circle v-bind:class="{activeNode:isActive}"
+            <circle v-bind:class="{activeTrichord:isActive}"
                 v-bind:cx="x" v-bind:cy="y" r="10">
             </circle> 
             <text v-bind:x="x" v-bind:y="y" font-size="12">
@@ -430,7 +430,7 @@ Vue.component('note-chicken',{
         }
     },
     template: `
-        <polygon v-bind:class="{activeTrichord:isActive}" 
+        <polygon v-bind:class="{activeNode:isActive}" 
             v-bind:points="points"
             v-on:pointerdown="clickOn()" 
             v-on:pointerup="clickOff()" 
@@ -589,6 +589,116 @@ Vue.component('chicken-wire',{
         </svg>
     `
 
+})
+
+// Note component : a clickable circle with the note name
+Vue.component('note-clock',{
+    mixins: [click2PlayMixin,activableMixin],
+    props: ['notes','nodes','id','center','radius'],
+    computed: {
+        x: function(){
+            return this.center.x+this.radius*Math.cos(-2*Math.PI*this.nodes[0]/12+Math.PI/2);
+        },
+        y : function (){
+            return this.center.y-this.radius*Math.sin(-2*Math.PI*this.nodes[0]/12+Math.PI/2);
+        }
+    },
+    //TODO: Find a way to auto insert the pointer events
+    template: `
+        <g v-bind:id="id" 
+        v-on:pointerdown="clickOn()" 
+        v-on:pointerup="clickOff()"
+        v-on:pointerleave="clickOff()">
+            <circle v-bind:class="{activeNode:isActive}"
+                v-bind:cx="x" v-bind:cy="y" r="12">
+            </circle> 
+            <text v-bind:x="x" v-bind:y="y">
+                {{ notes[0].text }}
+            </text>
+        </g>
+        `
+})
+
+//The circle representation
+Vue.component('clock-octave',{
+    props: {
+        height: Number,
+        width: Number,
+        notes: Array,
+        intervals: {
+            type: Number,
+            default: () => 1
+        }
+    },
+    computed: {
+        center: function(){
+            return {y:this.height/2,x:this.width/2}
+        },
+        radius: function(){
+            //TODO: Cleaner computation
+            return Math.min(this.height/2,this.width/2)*0.90;
+        },
+        viewbox: function(){
+            return `0 0 ${this.width} ${this.height}`
+        },
+        getCoords: function(){
+            var result = [];
+            for(i of range(0,12)){
+                if(this.notes[i].count>0){
+                    result.push({
+                        x:this.center.x+this.radius*Math.cos(-2*Math.PI*i/12+Math.PI/2),
+                        y:this.center.y-this.radius*Math.sin(-2*Math.PI*i/12+Math.PI/2)
+                    })
+                }
+            }
+            return result;
+        },
+        points: function (){
+            return this.getCoords.map( ({x,y}) => `${x},${y}` ).join(' ')
+        },
+        anyNote: function (){
+            return this.notes.some(note => note.count>0);
+        }
+    },
+    methods: {
+        node2Notes: function (nodes){
+            return nodes.map(node => this.notes[mod(node,12)])
+        },
+        genKey: function (n){
+            return "circle_"+n[0];
+        },
+        noteOn: function(nodes){
+            //var notes = this.node2Notes(nodes);
+            for (var nodeIt of nodes){
+                var pitch=81+nodeIt;
+                piano.noteOn(0,pitch,100);
+            }
+        },
+        noteOff: function(nodes){
+            //var notes = this.node2Notes(nodes);
+            for (var nodeIt of nodes){
+                var pitch=81+nodeIt;
+                piano.noteOff(0,pitch,100);
+            }
+        }
+    },
+    template: `
+        <svg id="svg" class="clock" 
+            v-bind:width="width" v-bind:height="height" 
+            v-bind:viewbox="viewbox">
+            <polygon v-if="anyNote" class=clockPolygon
+                v-bind:points="points"/>
+            <note-clock v-for="n in [0,1,2,3,4,5,6,7,8,9,10,11]" 
+                v-bind:key="genKey([n])"
+                v-bind:notes="node2Notes([n])"
+                v-bind:nodes="[n]"
+                v-bind:noteOn="noteOn"
+                v-bind:noteOff="noteOff"
+                v-bind:center="center"
+                v-bind:radius="radius"/>
+            
+        </svg>
+    `
 })
 
 // The App's main object, handling global concerns

@@ -73,3 +73,8 @@ text {
 .activeTrichord {
     fill : green;
 } 
+
+.clockPolygon{
+    fill : blue;
+    stroke: black;
+}
