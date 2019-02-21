@@ -82,12 +82,12 @@ Vue.component('note-node',{
             return (this.nodes[0].y + this.nodes[0].x/2) * baseSize;
         }
     },
-    //TODO: Find a way to auto insert the mouse events
+    //TODO: Find a way to auto insert the pointer events
     template: `
         <g v-bind:id="id" 
-        v-on:mousedown="clickOn()" 
-        v-on:mouseup="clickOff()"
-        v-on:mouseleave="clickOff()">
+        v-on:pointerdown="clickOn()" 
+        v-on:pointerup="clickOff()"
+        v-on:pointerleave="clickOff()">
             <circle v-bind:class="{activeNode:isActive}"
                 v-bind:cx="x" v-bind:cy="y" r="12">
             </circle> 
@@ -119,9 +119,9 @@ Vue.component('dichord',{
         }
     },
     template: `
-    <g v-on:mousedown="clickOn()" 
-        v-on:mouseup="clickOff()" 
-        v-on:mouseleave="clickOff()">
+    <g v-on:pointerdown="clickOn()" 
+        v-on:pointerup="clickOff()" 
+        v-on:pointerleave="clickOff()">
         <line v-bind:class="{activeDichord:isActive}" 
             v-bind="coords">
         </line> 
@@ -149,9 +149,9 @@ Vue.component('trichord',{
     template: `
         <polygon v-bind:class="{activeTrichord:isActive}" 
             v-bind:points="points"
-            v-on:mousedown="clickOn()" 
-            v-on:mouseup="clickOff()" 
-            v-on:mouseleave="clickOff()"/>
+            v-on:pointerdown="clickOn()" 
+            v-on:pointerup="clickOff()" 
+            v-on:pointerleave="clickOff()"/>
         `
 })
 
@@ -278,10 +278,10 @@ Vue.component('tonnetz-plan',{
             v-bind:width="width" v-bind:height="height" 
             v-bind:viewbox="viewbox"
             v-on:wheel.prevent="zoomInOut"
-            v-on:mousedown="captureOn"
-            v-on:mouseup="captureOff"
-            v-on:mouseleave="captureOff"
-            v-on:mousemove="drag">
+            v-on:pointerdown="captureOn"
+            v-on:pointerup="captureOff"
+            v-on:pointerleave="captureOff"
+            v-on:pointermove="drag">
             <g ref="trans" v-bind:transform="transform">
                 <trichord v-for="n in trichordList"
                     v-bind:key="genKey(n)"
@@ -338,12 +338,12 @@ Vue.component('trichord-chicken',{
             }
         }
     },
-    //TODO: Find a way to auto insert the mouse events
+    //TODO: Find a way to auto insert the pointer events
     template: `
         <g v-bind:id="id" 
-        v-on:mousedown="clickOn()" 
-        v-on:mouseup="clickOff()"
-        v-on:mouseleave="clickOff()">
+        v-on:pointerdown="clickOn()" 
+        v-on:pointerup="clickOff()"
+        v-on:pointerleave="clickOff()">
             <circle v-bind:class="{activeNode:isActive}"
                 v-bind:cx="x" v-bind:cy="y" r="10">
             </circle> 
@@ -390,9 +390,9 @@ Vue.component('dichord-chicken',{
         }
     },
     template: `
-    <g v-on:mousedown="clickOn()" 
-        v-on:mouseup="clickOff()" 
-        v-on:mouseleave="clickOff()">
+    <g v-on:pointerdown="clickOn()" 
+        v-on:pointerup="clickOff()" 
+        v-on:pointerleave="clickOff()">
         <line v-bind:class="{activeDichord:isActive}" 
             v-bind="coords">
         </line> 
@@ -432,9 +432,9 @@ Vue.component('note-chicken',{
     template: `
         <polygon v-bind:class="{activeTrichord:isActive}" 
             v-bind:points="points"
-            v-on:mousedown="clickOn()" 
-            v-on:mouseup="clickOff()" 
-            v-on:mouseleave="clickOff()"/>
+            v-on:pointerdown="clickOn()" 
+            v-on:pointerup="clickOff()" 
+            v-on:pointerleave="clickOff()"/>
         `
 })
 
@@ -562,10 +562,10 @@ Vue.component('chicken-wire',{
             v-bind:width="width" v-bind:height="height" 
             v-bind:viewbox="viewbox"
             v-on:wheel.prevent="zoomInOut"
-            v-on:mousedown="captureOn"
-            v-on:mouseup="captureOff"
-            v-on:mouseleave="captureOff"
-            v-on:mousemove="drag">
+            v-on:pointerdown="captureOn"
+            v-on:pointerup="captureOff"
+            v-on:pointerleave="captureOff"
+            v-on:pointermove="drag">
             <g ref="trans" v-bind:transform="transform">
                 <note-chicken v-for="n in nodeList" 
                     v-bind:key="genKey([n])"
