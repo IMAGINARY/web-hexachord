@@ -594,13 +594,16 @@ Vue.component('chicken-wire',{
 // Note component : a clickable circle with the note name
 Vue.component('note-clock',{
     mixins: [click2PlayMixin,activableMixin],
-    props: ['notes','nodes','id','center','radius'],
+    props: ['notes','nodes','id','center','radius','intervals'],
     computed: {
+        theta: function(){
+            return -2*Math.PI*(mod(this.intervals*(this.nodes[0]-3),12)/12 - 1/4);
+        },
         x: function(){
-            return this.center.x+this.radius*Math.cos(-2*Math.PI*this.nodes[0]/12+Math.PI/2);
+            return this.center.x+this.radius*Math.cos(this.theta);
         },
         y : function (){
-            return this.center.y-this.radius*Math.sin(-2*Math.PI*this.nodes[0]/12+Math.PI/2);
+            return this.center.y-this.radius*Math.sin(this.theta);
         }
     },
     //TODO: Find a way to auto insert the pointer events
@@ -636,7 +639,7 @@ Vue.component('clock-octave',{
         },
         radius: function(){
             //TODO: Cleaner computation
-            return Math.min(this.height/2,this.width/2)*0.90;
+            return Math.min(this.height/2,this.width/2)*0.85;
         },
         viewbox: function(){
             return `0 0 ${this.width} ${this.height}`
@@ -644,10 +647,11 @@ Vue.component('clock-octave',{
         getCoords: function(){
             var result = [];
             for(i of range(0,12)){
-                if(this.notes[i].count>0){
+                if(this.notes[mod(i*this.intervals,12)].count>0){
+                    var theta = -2*Math.PI*(mod((i-3*this.intervals),12)/12 - 1/4);
                     result.push({
-                        x:this.center.x+this.radius*Math.cos(-2*Math.PI*i/12+Math.PI/2),
-                        y:this.center.y-this.radius*Math.sin(-2*Math.PI*i/12+Math.PI/2)
+                        x:this.center.x+this.radius*Math.cos(theta),
+                        y:this.center.y-this.radius*Math.sin(theta)
                     })
                 }
             }
@@ -670,14 +674,14 @@ Vue.component('clock-octave',{
         noteOn: function(nodes){
             //var notes = this.node2Notes(nodes);
             for (var nodeIt of nodes){
-                var pitch=81+nodeIt;
+                var pitch=57+nodeIt;
                 piano.noteOn(0,pitch,100);
             }
         },
         noteOff: function(nodes){
             //var notes = this.node2Notes(nodes);
             for (var nodeIt of nodes){
-                var pitch=81+nodeIt;
+                var pitch=57+nodeIt;
                 piano.noteOff(0,pitch,100);
             }
         }
@@ -686,6 +690,7 @@ Vue.component('clock-octave',{
         <svg id="svg" class="clock" 
             v-bind:width="width" v-bind:height="height" 
             v-bind:viewbox="viewbox">
+            <circle v-bind:cx="center.x" v-bind:cy="center.y" v-bind:r="radius"/>
             <polygon v-if="anyNote" class=clockPolygon
                 v-bind:points="points"/>
             <note-clock v-for="n in [0,1,2,3,4,5,6,7,8,9,10,11]" 
@@ -695,7 +700,8 @@ Vue.component('clock-octave',{
                 v-bind:noteOn="noteOn"
                 v-bind:noteOff="noteOff"
                 v-bind:center="center"
-                v-bind:radius="radius"/>
+                v-bind:radius="radius"
+                v-bind:intervals="intervals"/>
             
         </svg>
     `
