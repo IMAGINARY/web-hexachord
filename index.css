@@ -57,6 +57,14 @@ text {
     -o-user-select: none;
 }
 
+.clock{
+    user-select: none;
+    -moz-user-select: none;
+    -khtml-user-select: none;
+    -webkit-user-select: none;
+    -o-user-select: none;
+}
+
 .active {
     background-color : red;
   }
