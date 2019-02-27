@@ -38,26 +38,35 @@ var piano = JZZ.input.Kbd({at:'piano', from:'C3', to:'G7', onCreate:function() {
     }
     });
 
+
+// Empty Vue instance to act as a bus for Midi Events
+var midiBus=new Vue({});
 // Provides MIDI playback on click
 // Must still bind the clickOn and clickOff methods in the template
 var click2PlayMixin = {
-    props: ['noteOn','noteOff','nodes'],
+    props: {
+        pitches: {
+            type:Array,
+            required:true
+        }
+    },
     data: function (){return{
         clicked: false
     }},
     methods:{
         clickOn: function(){
-            this.noteOn(this.nodes);
+            midiBus.$emit('note-on',this.pitches);
             this.clicked=true;
         },
         clickOff: function(){
             if(this.clicked){
-                this.noteOff(this.nodes);
+                midiBus.$emit('note-off',this.pitches);
                 this.clicked=false;
             }
         }
     }
 }
+
 
 // Provides the isActive check
 // Must still be used in the template to have any effect
@@ -85,9 +94,9 @@ Vue.component('note-node',{
     //TODO: Find a way to auto insert the pointer events
     template: `
         <g v-bind:id="id" 
-        v-on:pointerdown="clickOn()" 
-        v-on:pointerup="clickOff()"
-        v-on:pointerleave="clickOff()">
+            v-on:pointerdown="clickOn()" 
+            v-on:pointerup="clickOff()" 
+            v-on:pointerleave="clickOff()">
             <circle v-bind:class="{activeNode:isActive}"
                 v-bind:cx="x" v-bind:cy="y" r="12">
             </circle> 
@@ -258,19 +267,8 @@ Vue.component('tonnetz-plan',{
         genKey: function (n){
             return n.map(function textify(node){return `${node.x},${node.y}`}).join(' ')
         },
-        noteOn: function(nodes){
-            //var notes = this.node2Notes(nodes);
-            for (var nodeIt of nodes){
-                var pitch=81-nodeIt.x*this.intervals[0]+nodeIt.y*(this.intervals[2]-12);
-                piano.noteOn(0,pitch,100);
-            }
-        },
-        noteOff: function(nodes){
-            //var notes = this.node2Notes(nodes);
-            for (var nodeIt of nodes){
-                var pitch=81-nodeIt.x*this.intervals[0]+nodeIt.y*(this.intervals[2]-12);
-                piano.noteOff(0,pitch,100);
-            }
+        nodesToPitches: function(nodes){
+            return nodes.map(nodeIt => 81-nodeIt.x*this.intervals[0]+nodeIt.y*(this.intervals[2]-12));
         }
     },
     template: `
@@ -287,20 +285,17 @@ Vue.component('tonnetz-plan',{
                     v-bind:key="genKey(n)"
                     v-bind:notes="node2Notes(n)"
                     v-bind:nodes="n"
-                    v-bind:noteOn="noteOn"
-                    v-bind:noteOff="noteOff"/>
+                    :pitches="nodesToPitches(n)"/>
                 <dichord v-for="n in dichordList"
                     v-bind:key="genKey(n)"
                     v-bind:notes="node2Notes(n)"
                     v-bind:nodes="n"
-                    v-bind:noteOn="noteOn"
-                    v-bind:noteOff="noteOff"/>
+                    :pitches="nodesToPitches(n)"/>
                 <note-node v-for="n in nodeList" 
                     v-bind:key="genKey([n])"
                     v-bind:notes="node2Notes([n])"
                     v-bind:nodes="[n]"
-                    v-bind:noteOn="noteOn"
-                    v-bind:noteOff="noteOff"/>
+                    :pitches="nodesToPitches([n])"/>
             </g>
         </svg>
     `
@@ -542,19 +537,9 @@ Vue.component('chicken-wire',{
         genKey: function (n){
             return "c_"+n.map(function textify(node){return `${node.x},${node.y}`}).join(' ')
         },
-        noteOn: function(nodes){
-            //var notes = this.node2Notes(nodes);
-            for (var nodeIt of nodes){
-                var pitch=81-nodeIt.x*this.intervals[0]+nodeIt.y*(this.intervals[2]-12);
-                piano.noteOn(0,pitch,100);
-            }
-        },
-        noteOff: function(nodes){
-            //var notes = this.node2Notes(nodes);
-            for (var nodeIt of nodes){
-                var pitch=81-nodeIt.x*this.intervals[0]+nodeIt.y*(this.intervals[2]-12);
-                piano.noteOff(0,pitch,100);
-            }
+        nodesToPitches: function(nodes){
+            var A5 = 81;
+            return nodes.map(node => A5-node.x*this.intervals[0]+node.y*(this.intervals[2]-12));
         }
     },
     template: `
@@ -571,20 +556,18 @@ Vue.component('chicken-wire',{
                     v-bind:key="genKey([n])"
                     v-bind:notes="node2Notes([n])"
                     v-bind:nodes="[n]"
-                    v-bind:noteOn="noteOn"
-                    v-bind:noteOff="noteOff"/>
+                    v-bind:pitches="nodesToPitches([n])"
+                    />
                 <dichord-chicken v-for="n in dichordList"
                     v-bind:key="genKey(n)"
                     v-bind:notes="node2Notes(n)"
                     v-bind:nodes="n"
-                    v-bind:noteOn="noteOn"
-                    v-bind:noteOff="noteOff"/>
+                    v-bind:pitches="nodesToPitches(n)"/>
                 <trichord-chicken v-for="n in trichordList"
                     v-bind:key="genKey(n)"
                     v-bind:notes="node2Notes(n)"
                     v-bind:nodes="n"
-                    v-bind:noteOn="noteOn"
-                    v-bind:noteOff="noteOff"/>
+                    v-bind:pitches="nodesToPitches(n)"/>
             </g>
         </svg>
     `
@@ -630,7 +613,7 @@ Vue.component('clock-octave',{
         notes: Array,
         intervals: {
             type: Number,
-            default: () => 1
+            default: 1
         }
     },
     computed: {
@@ -737,9 +720,9 @@ var proto = new Vue({
             {text: 'Eb', count:0},
             {text: 'E',  count:0},
             {text: 'F',  count:0},
-            {text: 'F#', count:0},
+            {text: 'Gb', count:0},
             {text: 'G',  count:0},
-            {text: 'G#', count:0}
+            {text: 'Ab', count:0}
         ],
         loadlog: "*** MIDI.js is loading soundfont... ***",
         //TODO: Find a way to have nice output on Safari and Firefox
@@ -809,11 +792,13 @@ var proto = new Vue({
                 this.player.play();
             }
         },
+        //TODO: add a button to manually trigger this
         resetNotes: function(){
             for (note of this.notes){
                 note.count = 0;
             }
         },
+        //TODO: encapsulate this in a loader component
         load: function(data, name) {
             try {
                 this.player = JZZ.MIDI.SMF(data).player();
@@ -827,7 +812,6 @@ var proto = new Vue({
             }
         },
         fromFile: function () {
-            //TODO: Fix multichannel Midi reading
             if (window.FileReader) {
                 this.clear();
                 var reader = new FileReader();
@@ -875,9 +859,24 @@ var proto = new Vue({
         fromBase64: function () {
             this.clear();
             this.load(JZZ.lib.fromBase64(data), 'Base64 data');
+        },
+        noteOn: function(pitches){
+            //var notes = this.node2Notes(nodes);
+            for (var pitch of pitches){
+                piano.noteOn(0,pitch,100);
+            }
+        },
+        noteOff: function(pitches){
+            //var notes = this.node2Notes(nodes);
+            for (var pitch of pitches){
+                piano.noteOff(0,pitch,100);
+            }
         }
+    },
+    mounted(){
+        midiBus.$on('note-on',this.noteOn);
+        midiBus.$on('note-off',this.noteOff);
     }
-
 })
 
 // Example date : 'Mary had a little lamb'
