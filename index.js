@@ -41,9 +41,9 @@ var piano = JZZ.input.Kbd({at:'piano', from:'C3', to:'G7', onCreate:function() {
 
 // Empty Vue instance to act as a bus for Midi Events
 var midiBus=new Vue({});
-// Provides MIDI playback on click
-// Must still bind the clickOn and clickOff methods in the template
-var click2PlayMixin = {
+// Provides MIDI playback on click for the slotted element
+// The element must be valid svg markup
+let clickToPlayWrapper = {
     props: {
         pitches: {
             type:Array,
@@ -64,9 +64,15 @@ var click2PlayMixin = {
                 this.clicked=false;
             }
         }
-    }
+    },
+    template:`
+        <g @pointerdown="clickOn()" 
+        @pointerup="clickOff()" 
+        @pointerleave="clickOff()">
+            <slot/>
+        </g>
+    `
 }
-
 
 // Provides the isActive check
 // Must still be used in the template to have any effect
@@ -81,7 +87,7 @@ var activableMixin = {
 
 // Note component : a clickable circle with the note name
 Vue.component('note-node',{
-    mixins: [click2PlayMixin,activableMixin],
+    mixins: [activableMixin],
     props: ['notes','nodes','id'],
     computed: {
         x : function (){
@@ -93,10 +99,7 @@ Vue.component('note-node',{
     },
     //TODO: Find a way to auto insert the pointer events
     template: `
-        <g v-bind:id="id" 
-            v-on:pointerdown="clickOn()" 
-            v-on:pointerup="clickOff()" 
-            v-on:pointerleave="clickOff()">
+        <g v-bind:id="id">
             <circle v-bind:class="{activeNode:isActive}"
                 v-bind:cx="x" v-bind:cy="y" r="12">
             </circle> 
@@ -109,7 +112,7 @@ Vue.component('note-node',{
 
 // Dichord component : a clickable line between the two notes that it contains, with a small circle for easier clicking
 Vue.component('dichord',{
-    mixins: [click2PlayMixin,activableMixin],
+    mixins: [activableMixin],
     props: ['notes','nodes'],
     computed: {
         coords: function (){
@@ -128,9 +131,7 @@ Vue.component('dichord',{
         }
     },
     template: `
-    <g v-on:pointerdown="clickOn()" 
-        v-on:pointerup="clickOff()" 
-        v-on:pointerleave="clickOff()">
+    <g>
         <line v-bind:class="{activeDichord:isActive}" 
             v-bind="coords">
         </line> 
@@ -143,7 +144,7 @@ Vue.component('dichord',{
 
 // Trichord component : a clickable triangle between the three notes that it contains
 Vue.component('trichord',{
-    mixins: [click2PlayMixin,activableMixin],
+    mixins: [activableMixin],
     props: ['notes','nodes'],
     computed: {
         coords: function (){
@@ -157,10 +158,7 @@ Vue.component('trichord',{
     },
     template: `
         <polygon v-bind:class="{activeTrichord:isActive}" 
-            v-bind:points="points"
-            v-on:pointerdown="clickOn()" 
-            v-on:pointerup="clickOff()" 
-            v-on:pointerleave="clickOff()"/>
+            v-bind:points="points"/>
         `
 })
 
@@ -175,6 +173,7 @@ Vue.component('tonnetz-plan',{
             default: () => [3,4,5]
         }
     },
+    components: {clickToPlayWrapper},
     data: function(){return {
         tx : 0,
         ty : 0,
@@ -281,21 +280,27 @@ Vue.component('tonnetz-plan',{
             v-on:pointerleave="captureOff"
             v-on:pointermove="drag">
             <g ref="trans" v-bind:transform="transform">
-                <trichord v-for="n in trichordList"
-                    v-bind:key="genKey(n)"
+                <clickToPlayWrapper 
+                v-for="n in trichordList" v-bind:key="genKey(n)"
+                :pitches="nodesToPitches(n)">
+                    <trichord 
                     v-bind:notes="node2Notes(n)"
                     v-bind:nodes="n"
                     :pitches="nodesToPitches(n)"/>
-                <dichord v-for="n in dichordList"
-                    v-bind:key="genKey(n)"
+                </clickToPlayWrapper>
+                <clickToPlayWrapper 
+                v-for="n in dichordList" v-bind:key="genKey(n)"
+                :pitches="nodesToPitches(n)">
+                    <dichord 
                     v-bind:notes="node2Notes(n)"
-                    v-bind:nodes="n"
-                    :pitches="nodesToPitches(n)"/>
-                <note-node v-for="n in nodeList" 
-                    v-bind:key="genKey([n])"
-                    v-bind:notes="node2Notes([n])"
-                    v-bind:nodes="[n]"
-                    :pitches="nodesToPitches([n])"/>
+                    v-bind:nodes="n"/>
+                    </clickToPlayWrapper>
+                <clickToPlayWrapper 
+                v-for="n in nodeList" v-bind:key="genKey([n])"
+                :pitches="nodesToPitches([n])">
+                    <note-node v-bind:notes="node2Notes([n])"
+                    v-bind:nodes="[n]"/>
+                </clickToPlayWrapper>
             </g>
         </svg>
     `
@@ -312,7 +317,7 @@ const logicalToSvgY = node => (node.y + node.x/2) * baseSize;
 
 // The chicken-wire's trichord component : a clickable circle representing the chord
 Vue.component('trichord-chicken',{
-    mixins: [click2PlayMixin,activableMixin],
+    mixins: [activableMixin],
     props: ['notes','nodes','id'],
     computed: {
         x : function (){
@@ -335,10 +340,7 @@ Vue.component('trichord-chicken',{
     },
     //TODO: Find a way to auto insert the pointer events
     template: `
-        <g v-bind:id="id" 
-        v-on:pointerdown="clickOn()" 
-        v-on:pointerup="clickOff()"
-        v-on:pointerleave="clickOff()">
+        <g v-bind:id="id">
             <circle v-bind:class="{activeTrichord:isActive}"
                 v-bind:cx="x" v-bind:cy="y" r="10">
             </circle> 
@@ -352,7 +354,7 @@ Vue.component('trichord-chicken',{
 // The chicken-wire's dichord component: a line between the two trichords that contain the same notes,
 // with a small circle for easier clicking
 Vue.component('dichord-chicken',{
-    mixins: [click2PlayMixin,activableMixin],
+    mixins: [activableMixin],
     props: ['notes','nodes'],
     computed: {
         coords: function (){
@@ -385,9 +387,7 @@ Vue.component('dichord-chicken',{
         }
     },
     template: `
-    <g v-on:pointerdown="clickOn()" 
-        v-on:pointerup="clickOff()" 
-        v-on:pointerleave="clickOff()">
+    <g>
         <line v-bind:class="{activeDichord:isActive}" 
             v-bind="coords">
         </line> 
@@ -400,7 +400,7 @@ Vue.component('dichord-chicken',{
 
 // The chicken-wire's note component: A clickable hexagon located between all the chords that use that note
 Vue.component('note-chicken',{
-    mixins: [click2PlayMixin,activableMixin],
+    mixins: [activableMixin],
     props: ['notes','nodes'],
     computed: {
         coords: function (){
@@ -426,10 +426,7 @@ Vue.component('note-chicken',{
     },
     template: `
         <polygon v-bind:class="{activeNode:isActive}" 
-            v-bind:points="points"
-            v-on:pointerdown="clickOn()" 
-            v-on:pointerup="clickOff()" 
-            v-on:pointerleave="clickOff()"/>
+            v-bind:points="points"/>
         `
 })
 
@@ -444,6 +441,7 @@ Vue.component('chicken-wire',{
             default: () => [3,4,5]
         }
     },
+    components: {clickToPlayWrapper},
     data: function(){return {
         tx : 0,
         ty : 0,
@@ -552,22 +550,28 @@ Vue.component('chicken-wire',{
             v-on:pointerleave="captureOff"
             v-on:pointermove="drag">
             <g ref="trans" v-bind:transform="transform">
-                <note-chicken v-for="n in nodeList" 
-                    v-bind:key="genKey([n])"
+                <clickToPlayWrapper 
+                v-for="n in nodeList" v-bind:key="genKey([n])"
+                :pitches="nodesToPitches([n])">
+                    <note-chicken
                     v-bind:notes="node2Notes([n])"
                     v-bind:nodes="[n]"
-                    v-bind:pitches="nodesToPitches([n])"
                     />
-                <dichord-chicken v-for="n in dichordList"
-                    v-bind:key="genKey(n)"
+                </clickToPlayWrapper>
+                <clickToPlayWrapper 
+                v-for="n in dichordList" v-bind:key="genKey(n)"
+                :pitches="nodesToPitches(n)">
+                    <dichord-chicken 
                     v-bind:notes="node2Notes(n)"
-                    v-bind:nodes="n"
-                    v-bind:pitches="nodesToPitches(n)"/>
-                <trichord-chicken v-for="n in trichordList"
-                    v-bind:key="genKey(n)"
+                    v-bind:nodes="n"/>
+                </clickToPlayWrapper>
+                <clickToPlayWrapper 
+                v-for="n in trichordList" v-bind:key="genKey(n)"
+                :pitches="nodesToPitches(n)">
+                    <trichord-chicken 
                     v-bind:notes="node2Notes(n)"
-                    v-bind:nodes="n"
-                    v-bind:pitches="nodesToPitches(n)"/>
+                    v-bind:nodes="n"/>
+                </clickToPlayWrapper>
             </g>
         </svg>
     `
@@ -576,7 +580,7 @@ Vue.component('chicken-wire',{
 
 // Note component : a clickable circle with the note name
 Vue.component('note-clock',{
-    mixins: [click2PlayMixin,activableMixin],
+    mixins: [activableMixin],
     props: ['notes','nodes','id','center','radius','intervals'],
     computed: {
         theta: function(){
@@ -591,10 +595,7 @@ Vue.component('note-clock',{
     },
     //TODO: Find a way to auto insert the pointer events
     template: `
-        <g v-bind:id="id" 
-        v-on:pointerdown="clickOn()" 
-        v-on:pointerup="clickOff()"
-        v-on:pointerleave="clickOff()">
+        <g v-bind:id="id">
             <circle v-bind:class="{activeNode:isActive}"
                 v-bind:cx="x" v-bind:cy="y" r="12">
             </circle> 
@@ -616,6 +617,7 @@ Vue.component('clock-octave',{
             default: 1
         }
     },
+    components: {clickToPlayWrapper},
     computed: {
         center: function(){
             return {y:this.height/2,x:this.width/2}
@@ -654,19 +656,9 @@ Vue.component('clock-octave',{
         genKey: function (n){
             return "circle_"+n[0];
         },
-        noteOn: function(nodes){
-            //var notes = this.node2Notes(nodes);
-            for (var nodeIt of nodes){
-                var pitch=57+nodeIt;
-                piano.noteOn(0,pitch,100);
-            }
-        },
-        noteOff: function(nodes){
-            //var notes = this.node2Notes(nodes);
-            for (var nodeIt of nodes){
-                var pitch=57+nodeIt;
-                piano.noteOff(0,pitch,100);
-            }
+        nodesToPitches: function(nodes){
+            let A3 = 57;
+            return nodes.map(node => A3+node);
         }
     },
     template: `
@@ -676,15 +668,16 @@ Vue.component('clock-octave',{
             <circle v-bind:cx="center.x" v-bind:cy="center.y" v-bind:r="radius"/>
             <polygon v-if="anyNote" class=clockPolygon
                 v-bind:points="points"/>
-            <note-clock v-for="n in [0,1,2,3,4,5,6,7,8,9,10,11]" 
-                v-bind:key="genKey([n])"
+            <clickToPlayWrapper v-for="n in [0,1,2,3,4,5,6,7,8,9,10,11]" 
+            :pitches="nodesToPitches([n])"
+            v-bind:key="genKey([n])">
+                <note-clock
                 v-bind:notes="node2Notes([n])"
                 v-bind:nodes="[n]"
-                v-bind:noteOn="noteOn"
-                v-bind:noteOff="noteOff"
                 v-bind:center="center"
                 v-bind:radius="radius"
                 v-bind:intervals="intervals"/>
+            </clickToPlayWrapper>
             
         </svg>
     `
