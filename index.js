@@ -21,6 +21,11 @@ function* range (begin, end, interval = 1) {
     }
 }
 
+//Used for validation
+function isSubset(a, b){
+    return a.every(val => b.includes(val));
+}
+
 var piano = JZZ.input.Kbd({at:'piano', from:'C3', to:'G7', onCreate:function() {
     this.getBlackKeys().setStyle({color:'#fff'});
     this.getKey('C5').setInnerHTML('<span class=inner>W</span>');
@@ -85,25 +90,30 @@ var activableMixin = {
     }
 }
 
+// Conversion between tonnetz coordinates and svg coordinates
+const logicalToSvgX = node => node.x * xstep * baseSize;
+const logicalToSvgY = node => (node.y + node.x/2) * baseSize;
+const logicalToSvg = node => ({x:logicalToSvgX(node), y:logicalToSvgY(node)})
+
 // Note component : a clickable circle with the note name
 Vue.component('note-node',{
     mixins: [activableMixin],
-    props: ['notes','nodes','id'],
-    computed: {
-        x : function (){
-            return this.nodes[0].x * xstep * baseSize;
-        },
-        y : function (){
-            return (this.nodes[0].y + this.nodes[0].x/2) * baseSize;
+    props: {
+        notes:{
+            type: Array,
+            required: true//,
+            //validator: function(value){
+            //    return isSubset(value,this.$root.notes);
+            //}
         }
     },
     //TODO: Find a way to auto insert the pointer events
     template: `
-        <g v-bind:id="id">
+        <g>
             <circle v-bind:class="{activeNode:isActive}"
-                v-bind:cx="x" v-bind:cy="y" r="12">
+                r="12">
             </circle> 
-            <text v-bind:x="x" v-bind:y="y">
+            <text>
                 {{ notes[0].text }}
             </text>
         </g>
@@ -113,20 +123,32 @@ Vue.component('note-node',{
 // Dichord component : a clickable line between the two notes that it contains, with a small circle for easier clicking
 Vue.component('dichord',{
     mixins: [activableMixin],
-    props: ['notes','nodes'],
+    props: {
+        notes:{
+            type: Array,
+            required: true//,
+            //validator: value => isSubset(value,this.$root.notes)
+        },
+        // dichordType indicates which interval is used
+        shape:{
+            type: Object,
+            required: true//,
+            //validator: [0,1,2].includes
+        }
+    },
     computed: {
         coords: function (){
             return {
-                x1 : this.nodes[0].x * xstep * baseSize,
-                x2 : this.nodes[1].x * xstep * baseSize,
-                y1 : (this.nodes[0].y + this.nodes[0].x/2) * baseSize,
-                y2 : (this.nodes[1].y + this.nodes[1].x/2) * baseSize
+                x1 : 0,
+                x2 : logicalToSvgX(this.shape),
+                y1 : 0,
+                y2 : logicalToSvgY(this.shape)
             }
         },
         center: function (){
             return {
-                x: (this.coords.x1 + this.coords.x2)/2,
-                y: (this.coords.y1 + this.coords.y2)/2
+                x: (this.coords.x2)/2,
+                y: (this.coords.y2)/2
             }
         }
     },
@@ -268,6 +290,18 @@ Vue.component('tonnetz-plan',{
         },
         nodesToPitches: function(nodes){
             return nodes.map(nodeIt => 81-nodeIt.x*this.intervals[0]+nodeIt.y*(this.intervals[2]-12));
+        },
+        position: function(node){
+            let x = node.x * xstep * baseSize;
+            let y = (node.y + node.x/2) * baseSize;
+            return `translate(${x} ${y})`
+        },
+        //TODO: clearer handling of dichord type
+        dichordType: function(nodes){
+            return {
+                x:nodes[1].x-nodes[0].x,
+                y:nodes[1].y-nodes[0].y
+            };
         }
     },
     template: `
@@ -280,7 +314,7 @@ Vue.component('tonnetz-plan',{
             v-on:pointerleave="captureOff"
             v-on:pointermove="drag">
             <g ref="trans" v-bind:transform="transform">
-                <clickToPlayWrapper 
+                <clickToPlayWrapper
                 v-for="n in trichordList" v-bind:key="genKey(n)"
                 :pitches="nodesToPitches(n)">
                     <trichord 
@@ -288,14 +322,16 @@ Vue.component('tonnetz-plan',{
                     v-bind:nodes="n"
                     :pitches="nodesToPitches(n)"/>
                 </clickToPlayWrapper>
-                <clickToPlayWrapper 
+
+                <clickToPlayWrapper :transform="position(n[0])"
                 v-for="n in dichordList" v-bind:key="genKey(n)"
                 :pitches="nodesToPitches(n)">
                     <dichord 
-                    v-bind:notes="node2Notes(n)"
-                    v-bind:nodes="n"/>
-                    </clickToPlayWrapper>
-                <clickToPlayWrapper 
+                    v-bind:shape="dichordType(n)"
+                    v-bind:notes="node2Notes(n)"/>
+                </clickToPlayWrapper>
+
+                <clickToPlayWrapper :transform="position(n)"
                 v-for="n in nodeList" v-bind:key="genKey([n])"
                 :pitches="nodesToPitches([n])">
                     <note-node v-bind:notes="node2Notes([n])"
@@ -309,8 +345,6 @@ Vue.component('tonnetz-plan',{
 
 // Utility functions
 const average = arr => arr.reduce((a,b) => a + b, 0) / arr.length;
-const logicalToSvgX = node => node.x * xstep * baseSize;
-const logicalToSvgY = node => (node.y + node.x/2) * baseSize;
 
 // ----------------------- Chicken Wire ---------------------------
 // TODO: Lots of duplicated code: factorize !
