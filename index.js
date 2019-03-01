@@ -96,7 +96,7 @@ const logicalToSvgY = node => (node.y + node.x/2) * baseSize;
 const logicalToSvg = node => ({x:logicalToSvgX(node), y:logicalToSvgY(node)})
 
 // Note component : a clickable circle with the note name
-Vue.component('note-node',{
+let noteTonnetz = {
     mixins: [activableMixin],
     props: {
         notes:{
@@ -118,10 +118,10 @@ Vue.component('note-node',{
             </text>
         </g>
         `
-})
+};
 
 // Dichord component : a clickable line between the two notes that it contains, with a small circle for easier clicking
-Vue.component('dichord',{
+let dichordTonnetz = {
     mixins: [activableMixin],
     props: {
         notes:{
@@ -129,7 +129,7 @@ Vue.component('dichord',{
             required: true
         },
         shape:{
-            type: Object,
+            type: Array,
             required: true
         }
     },
@@ -137,9 +137,9 @@ Vue.component('dichord',{
         coords: function (){
             return {
                 x1 : 0,
-                x2 : logicalToSvgX(this.shape),
+                x2 : logicalToSvgX(this.shape[1]),
                 y1 : 0,
-                y2 : logicalToSvgY(this.shape)
+                y2 : logicalToSvgY(this.shape[1])
             }
         },
         center: function (){
@@ -159,17 +159,24 @@ Vue.component('dichord',{
         </circle> 
     </g>
     `
-})
+};
 
 // Trichord component : a clickable triangle between the three notes that it contains
-Vue.component('trichord',{
+let trichordTonnetz = {
     mixins: [activableMixin],
-    props: ['notes','nodes'],
+    props: {
+        notes: {
+            type: Array,
+            required: true
+        },
+        shape: {
+            type: Array,
+            required: true
+        }
+    },
     computed: {
         coords: function (){
-            return this.nodes.map(node => ({x:node.x * xstep * baseSize,
-                                            y:(node.y + node.x/2) * baseSize
-                                          }) );
+            return this.shape.map(logicalToSvg);
         },
         points: function (){
             return this.coords.map( ({x,y}) => `${x},${y}` ).join(' ')
@@ -179,7 +186,7 @@ Vue.component('trichord',{
         <polygon v-bind:class="{activeTrichord:isActive}" 
             v-bind:points="points"/>
         `
-})
+};
 
 // Slotted component that handles the drag and zoom logic on an svg
 let dragZoomSvg = {
@@ -276,7 +283,12 @@ Vue.component('tonnetz-plan',{
             type: Object
         }
     },
-    components: {clickToPlayWrapper},
+    components: {
+            clickToPlayWrapper,
+            'note': noteTonnetz,
+            'dichord': dichordTonnetz,
+            'trichord': trichordTonnetz
+    },
     computed: {
         nodeList: function (){
             var nodes = [];
@@ -319,16 +331,14 @@ Vue.component('tonnetz-plan',{
             return nodes.map(nodeIt => 81-nodeIt.x*this.intervals[0]+nodeIt.y*(this.intervals[2]-12));
         },
         position: function(node){
-            let x = node.x * xstep * baseSize;
-            let y = (node.y + node.x/2) * baseSize;
+            let {x,y} = logicalToSvg(node)
             return `translate(${x} ${y})`
         },
-        //TODO: clearer handling of dichord type
-        dichordType: function(nodes){
-            return {
-                x:nodes[1].x-nodes[0].x,
-                y:nodes[1].y-nodes[0].y
-            };
+        shape: function(nodes){
+            return nodes.map(node => ({
+                x:node.x-nodes[0].x,
+                y:node.y-nodes[0].y
+            }));
         },
         genKey: function (n){
             return n.map(function textify(node){return `${node.x},${node.y}`}).join(' ')
@@ -336,32 +346,32 @@ Vue.component('tonnetz-plan',{
     },
     template: `
         <g>
-            <clickToPlayWrapper
+            <clickToPlayWrapper :transform="position(n[0])"
             v-for="n in trichordList" v-bind:key="genKey(n)"
             :pitches="nodesToPitches(n)">
                 <trichord 
                 v-bind:notes="node2Notes(n)"
                 v-bind:nodes="n"
-                :pitches="nodesToPitches(n)"/>
+                :shape="shape(n)"
+                />
             </clickToPlayWrapper>
 
             <clickToPlayWrapper :transform="position(n[0])"
             v-for="n in dichordList" v-bind:key="genKey(n)"
             :pitches="nodesToPitches(n)">
                 <dichord 
-                v-bind:shape="dichordType(n)"
+                v-bind:shape="shape(n)"
                 v-bind:notes="node2Notes(n)"/>
             </clickToPlayWrapper>
 
             <clickToPlayWrapper :transform="position(n)"
             v-for="n in nodeList" v-bind:key="genKey([n])"
             :pitches="nodesToPitches([n])">
-                <note-node v-bind:notes="node2Notes([n])"
+                <note v-bind:notes="node2Notes([n])"
                 v-bind:nodes="[n]"/>
             </clickToPlayWrapper>
         </g>
     `
-
 })
 
 // Utility functions
@@ -542,6 +552,12 @@ Vue.component('chicken-wire',{
         nodesToPitches: function(nodes){
             var A5 = 81;
             return nodes.map(node => A5-node.x*this.intervals[0]+node.y*(this.intervals[2]-12));
+        },
+        shape: function(nodes){
+            return nodes.map(node => ({
+                x:node.x-nodes[0].x,
+                y:node.y-nodes[0].y
+            }));
         }
     },
     template: `
