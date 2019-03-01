@@ -107,7 +107,6 @@ let noteTonnetz = {
             //}
         }
     },
-    //TODO: Find a way to auto insert the pointer events
     template: `
         <g>
             <circle v-bind:class="{activeNode:isActive}"
@@ -272,7 +271,7 @@ let dragZoomSvg = {
 }
 
 // The Tonnetz component : A large component that contains the drawing of the Tonnetz
-Vue.component('tonnetz-plan',{
+let tonnetzLike = {
     props: {
         notes: Array,
         intervals: {
@@ -282,12 +281,6 @@ Vue.component('tonnetz-plan',{
         bounds: {
             type: Object
         }
-    },
-    components: {
-            clickToPlayWrapper,
-            'note': noteTonnetz,
-            'dichord': dichordTonnetz,
-            'trichord': trichordTonnetz
     },
     computed: {
         nodeList: function (){
@@ -343,7 +336,19 @@ Vue.component('tonnetz-plan',{
         genKey: function (n){
             return n.map(function textify(node){return `${node.x},${node.y}`}).join(' ')
         }
+    }
+};
+
+
+let tonnetzPlan = {
+    components: {
+        clickToPlayWrapper,
+        'note': noteTonnetz,
+        'dichord': dichordTonnetz,
+        'trichord': trichordTonnetz
     },
+    extends: tonnetzLike,
+    //TODO: Get the template into the base component (need to control the layering of elements)
     template: `
         <g>
             <clickToPlayWrapper :transform="position(n[0])"
@@ -372,7 +377,7 @@ Vue.component('tonnetz-plan',{
             </clickToPlayWrapper>
         </g>
     `
-})
+}
 
 // Utility functions
 const average = arr => arr.reduce((a,b) => a + b, 0) / arr.length;
@@ -381,20 +386,20 @@ const average = arr => arr.reduce((a,b) => a + b, 0) / arr.length;
 // TODO: Lots of duplicated code: factorize !
 
 // The chicken-wire's trichord component : a clickable circle representing the chord
-Vue.component('trichord-chicken',{
+let trichordChicken = {
     mixins: [activableMixin],
-    props: ['notes','nodes','id'],
+    props: ['notes','shape','id'],
     computed: {
         x : function (){
-            return average(this.nodes.map(logicalToSvgX));
+            return average(this.shape.map(logicalToSvgX));
         },
         y : function (){
-            return average(this.nodes.map(logicalToSvgY));
+            return average(this.shape.map(logicalToSvgY));
         },
         text: function(){
             //Is this a major or minor chord ?
             //TODO: This is more than just minor or major, we have to clarify
-            var major = (this.nodes[0].y == this.nodes[1].y);
+            var major = (this.shape[0].y == this.shape[1].y);
             if (major){
                 return this.notes[2].text;
             }else{
@@ -403,7 +408,6 @@ Vue.component('trichord-chicken',{
             }
         }
     },
-    //TODO: Find a way to auto insert the pointer events
     template: `
         <g v-bind:id="id">
             <circle v-bind:class="{activeTrichord:isActive}"
@@ -414,21 +418,21 @@ Vue.component('trichord-chicken',{
             </text>
         </g>
         `
-})
+}
 
 // The chicken-wire's dichord component: a line between the two trichords that contain the same notes,
 // with a small circle for easier clicking
-Vue.component('dichord-chicken',{
+let dichordChicken = {
     mixins: [activableMixin],
-    props: ['notes','nodes'],
+    props: ['notes','shape'],
     computed: {
         coords: function (){
             //Coordinates of the reference point in the svg referential
-            var x0 = logicalToSvgX(this.nodes[0]);
-            var y0 = logicalToSvgY(this.nodes[0]);
+            var x0 = logicalToSvgX(this.shape[0]);
+            var y0 = logicalToSvgY(this.shape[0]);
             //Orientation of the notes axis
-            var dx = logicalToSvgX(this.nodes[1]) - logicalToSvgX(this.nodes[0]);
-            var dy = logicalToSvgY(this.nodes[1]) - logicalToSvgY(this.nodes[0]);
+            var dx = logicalToSvgX(this.shape[1]) - logicalToSvgX(this.shape[0]);
+            var dy = logicalToSvgY(this.shape[1]) - logicalToSvgY(this.shape[0]);
             //The rotation that sends (1,0) to (dx,dy)
             var rotate = function(point){ 
                 return {x: (dx*point.x-dy*point.y), 
@@ -461,17 +465,17 @@ Vue.component('dichord-chicken',{
         </circle> 
     </g>
     `
-})
+}
 
 // The chicken-wire's note component: A clickable hexagon located between all the chords that use that note
-Vue.component('note-chicken',{
+let noteChicken = {
     mixins: [activableMixin],
     props: ['notes','nodes'],
     computed: {
         coords: function (){
             //Coordinates of the reference point in the svg referential
-            var x0 = logicalToSvgX(this.nodes[0]);
-            var y0 = logicalToSvgY(this.nodes[0]);
+            var x0 = 0 //logicalToSvgX(this.shape[0]);
+            var y0 = 0 //logicalToSvgY(this.shape[0]);
 
             return[
                 {x:x0+baseSize*xstep/3,  y:y0+baseSize/2},
@@ -493,101 +497,46 @@ Vue.component('note-chicken',{
         <polygon v-bind:class="{activeNode:isActive}" 
             v-bind:points="points"/>
         `
-})
+}
 
 // The chicken-wire's main component: handles the layout and structure
-Vue.component('chicken-wire',{
-    props: {
-        notes: Array,
-        intervals: {
-            type: Array,
-            default: () => [3,4,5]
-        },
-        bounds: {
-            type: Object
-        }
+let chickenWire = {
+    components: {
+        clickToPlayWrapper,
+        'note': noteChicken,
+        'dichord': dichordChicken,
+        'trichord': trichordChicken
     },
-    components: {clickToPlayWrapper},
-    computed: {
-        nodeList: function (){
-            var nodes = [];
-            var xmin = Math.floor(this.bounds.xmin/(baseSize*xstep))
-            var xmax = Math.ceil(this.bounds.xmax/(baseSize*xstep))
-            for(xi of range(xmin,xmax+1)){
-                ymin = Math.floor(this.bounds.ymin/(baseSize)-xi/2)
-                ymax = Math.ceil(this.bounds.ymax/(baseSize)-xi/2)
-                for(yi of range(ymin,ymax+1)){
-                    nodes.push({x:xi,y:yi})
-                }
-            }
-            return nodes;
-        },
-        dichordList: function (){
-            var nodes = [];
-            //For each root
-            for(node of this.nodeList){
-                nodes.push([{x:node.x,y:node.y},{x:node.x+1,y:node.y  }]);
-                nodes.push([{x:node.x,y:node.y},{x:node.x  ,y:node.y+1}]);
-                nodes.push([{x:node.x,y:node.y},{x:node.x-1,y:node.y+1}]);
-            }
-            return nodes;
-        },
-        trichordList: function (){
-            var nodes = [];
-            //For each root
-            for(node of this.nodeList){
-                nodes.push([{x:node.x,y:node.y},{x:node.x+1,y:node.y  },{x:node.x,y:node.y+1}]);
-                nodes.push([{x:node.x,y:node.y},{x:node.x-1,y:node.y+1},{x:node.x,y:node.y+1}]);
-            }
-            return nodes;
-        }
-    },
-    methods: {
-        node2Notes: function (nodes){
-            return nodes.map(node => this.notes[mod(-node.x*this.intervals[0]+node.y*this.intervals[2],12)])
-        },
-        genKey: function (n){
-            return "c_"+n.map(function textify(node){return `${node.x},${node.y}`}).join(' ')
-        },
-        nodesToPitches: function(nodes){
-            var A5 = 81;
-            return nodes.map(node => A5-node.x*this.intervals[0]+node.y*(this.intervals[2]-12));
-        },
-        shape: function(nodes){
-            return nodes.map(node => ({
-                x:node.x-nodes[0].x,
-                y:node.y-nodes[0].y
-            }));
-        }
-    },
+    extends: tonnetzLike,
     template: `
         <g>
-            <clickToPlayWrapper 
+            <clickToPlayWrapper :transform="position(n)"
             v-for="n in nodeList" v-bind:key="genKey([n])"
             :pitches="nodesToPitches([n])">
-                <note-chicken
+                <note
                 v-bind:notes="node2Notes([n])"
                 v-bind:nodes="[n]"
                 />
             </clickToPlayWrapper>
-            <clickToPlayWrapper 
+
+            <clickToPlayWrapper :transform="position(n[0])"
             v-for="n in dichordList" v-bind:key="genKey(n)"
             :pitches="nodesToPitches(n)">
-                <dichord-chicken 
+                <dichord
                 v-bind:notes="node2Notes(n)"
-                v-bind:nodes="n"/>
+                v-bind:shape="shape(n)"/>
             </clickToPlayWrapper>
-            <clickToPlayWrapper 
+            
+            <clickToPlayWrapper :transform="position(n[0])"
             v-for="n in trichordList" v-bind:key="genKey(n)"
             :pitches="nodesToPitches(n)">
-                <trichord-chicken 
+                <trichord
                 v-bind:notes="node2Notes(n)"
-                v-bind:nodes="n"/>
+                v-bind:shape="shape(n)"/>
             </clickToPlayWrapper>
         </g>
     `
-
-})
+}
 
 // Note component : a clickable circle with the note name
 Vue.component('note-clock',{
@@ -604,7 +553,6 @@ Vue.component('note-clock',{
             return this.center.y-this.radius*Math.sin(this.theta);
         }
     },
-    //TODO: Find a way to auto insert the pointer events
     template: `
         <g v-bind:id="id">
             <circle v-bind:class="{activeNode:isActive}"
@@ -697,7 +645,7 @@ Vue.component('clock-octave',{
 // The App's main object, handling global concerns
 var proto = new Vue({
     el: '#proto',
-    components: {dragZoomSvg},
+    components: {dragZoomSvg,tonnetzPlan,chickenWire},
     data: {
         tonnetze: [
             [1,1,10],
