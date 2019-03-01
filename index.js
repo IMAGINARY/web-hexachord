@@ -126,14 +126,11 @@ Vue.component('dichord',{
     props: {
         notes:{
             type: Array,
-            required: true//,
-            //validator: value => isSubset(value,this.$root.notes)
+            required: true
         },
-        // dichordType indicates which interval is used
         shape:{
             type: Object,
-            required: true//,
-            //validator: [0,1,2].includes
+            required: true
         }
     },
     computed: {
@@ -184,72 +181,37 @@ Vue.component('trichord',{
         `
 })
 
-// The Tonnetz component : A large component that contains the drawing of the Tonnetz and controls to drag it around
-Vue.component('tonnetz-plan',{
+// Slotted component that handles the drag and zoom logic on an svg
+let dragZoomSvg = {
     props: {
         height: Number,
         width: Number,
-        notes: Array,
-        intervals: {
-            type: Array,
-            default: () => [3,4,5]
-        }
+        scaleBounds: Object
     },
-    components: {clickToPlayWrapper},
-    data: function(){return {
+    data: function(){return{
         tx : 0,
         ty : 0,
         scale: 2,
         captureMouse: false,
         clickedPos: {x:0,y:0},
-        //size: {height: baseSize*10, width: baseSize*10},
-        //TODO: Set max scale factor according to dimensions
-        scaleBounds: {mini:1,maxi:5}
     }},
     computed: {
-        nodeList: function (){
-            var nodes = [];
-            var xmin = Math.floor(-this.tx/(baseSize*xstep))
-            var xmax = Math.ceil((-this.tx+this.width/this.scale)/(baseSize*xstep))
-            for(xi of range(xmin,xmax+1)){
-                ymin = Math.floor(-this.ty/(baseSize)-xi/2)
-                ymax = Math.ceil((-this.ty+this.height/this.scale)/(baseSize)-xi/2)
-                for(yi of range(ymin,ymax+1)){
-                    nodes.push({x:xi,y:yi})
-                }
-            }
-            return nodes;
-        },
-        dichordList: function (){
-            var nodes = [];
-            //For each root
-            for(node of this.nodeList){
-                nodes.push([{x:node.x,y:node.y},{x:node.x+1,y:node.y  }]);
-                nodes.push([{x:node.x,y:node.y},{x:node.x  ,y:node.y+1}]);
-                nodes.push([{x:node.x,y:node.y},{x:node.x-1,y:node.y+1}]);
-            }
-            return nodes;
-        },
-        trichordList: function (){
-            var nodes = [];
-            //For each root
-            for(node of this.nodeList){
-                nodes.push([{x:node.x,y:node.y},{x:node.x+1,y:node.y  },{x:node.x,y:node.y+1}]);
-                nodes.push([{x:node.x,y:node.y},{x:node.x-1,y:node.y+1},{x:node.x,y:node.y+1}]);
-            }
-            return nodes;
-        },
         transform: function(){
             return `scale(${this.scale}) translate(${this.tx} ${this.ty})`
         },
         viewbox: function(){
             return `0 0 ${this.width} ${this.height}`
+        },
+        bounds: function(){
+            return{
+                xmin:-this.tx,
+                ymin:-this.ty,
+                xmax:-this.tx+this.width /this.scale,
+                ymax:-this.ty+this.height/this.scale,
+            }
         }
     },
     methods: {
-        node2Notes: function (nodes){
-            return nodes.map(node => this.notes[mod(-node.x*this.intervals[0]+node.y*this.intervals[2],12)])
-        },
         zoomInOut: function (wheelEvent){
             var multiplier = Math.exp(-wheelEvent.deltaY/600)
             // Bound the multiplier to acceptable values
@@ -284,9 +246,74 @@ Vue.component('tonnetz-plan',{
         captureOff: function (event){
             this.captureMouse = false
             return
+        }
+    },
+    template: `
+        <svg id="svg" class="tonnetz" 
+        v-bind:width="width" v-bind:height="height" 
+        v-bind:viewbox="viewbox"
+        v-on:wheel.prevent="zoomInOut"
+        v-on:pointerdown="captureOn"
+        v-on:pointerup="captureOff"
+        v-on:pointerleave="captureOff"
+        v-on:pointermove="drag">
+            <g ref="trans" v-bind:transform="transform">
+                <slot :bounds="bounds"/>
+            </g>
+        </svg>
+    `
+}
+
+// The Tonnetz component : A large component that contains the drawing of the Tonnetz
+Vue.component('tonnetz-plan',{
+    props: {
+        notes: Array,
+        intervals: {
+            type: Array,
+            default: () => [3,4,5]
         },
-        genKey: function (n){
-            return n.map(function textify(node){return `${node.x},${node.y}`}).join(' ')
+        bounds: {
+            type: Object
+        }
+    },
+    components: {clickToPlayWrapper},
+    computed: {
+        nodeList: function (){
+            var nodes = [];
+            var xmin = Math.floor(this.bounds.xmin/(baseSize*xstep))
+            var xmax = Math.ceil(this.bounds.xmax/(baseSize*xstep))
+            for(xi of range(xmin,xmax+1)){
+                ymin = Math.floor(this.bounds.ymin/(baseSize)-xi/2)
+                ymax = Math.ceil(this.bounds.ymax/(baseSize)-xi/2)
+                for(yi of range(ymin,ymax+1)){
+                    nodes.push({x:xi,y:yi})
+                }
+            }
+            return nodes;
+        },
+        dichordList: function (){
+            var nodes = [];
+            //For each root
+            for(node of this.nodeList){
+                nodes.push([{x:node.x,y:node.y},{x:node.x+1,y:node.y  }]);
+                nodes.push([{x:node.x,y:node.y},{x:node.x  ,y:node.y+1}]);
+                nodes.push([{x:node.x,y:node.y},{x:node.x-1,y:node.y+1}]);
+            }
+            return nodes;
+        },
+        trichordList: function (){
+            var nodes = [];
+            //For each root
+            for(node of this.nodeList){
+                nodes.push([{x:node.x,y:node.y},{x:node.x+1,y:node.y  },{x:node.x,y:node.y+1}]);
+                nodes.push([{x:node.x,y:node.y},{x:node.x-1,y:node.y+1},{x:node.x,y:node.y+1}]);
+            }
+            return nodes;
+        }
+    },
+    methods: {
+        node2Notes: function (nodes){
+            return nodes.map(node => this.notes[mod(-node.x*this.intervals[0]+node.y*this.intervals[2],12)])
         },
         nodesToPitches: function(nodes){
             return nodes.map(nodeIt => 81-nodeIt.x*this.intervals[0]+nodeIt.y*(this.intervals[2]-12));
@@ -302,43 +329,37 @@ Vue.component('tonnetz-plan',{
                 x:nodes[1].x-nodes[0].x,
                 y:nodes[1].y-nodes[0].y
             };
+        },
+        genKey: function (n){
+            return n.map(function textify(node){return `${node.x},${node.y}`}).join(' ')
         }
     },
     template: `
-        <svg id="svg" class="tonnetz" 
-            v-bind:width="width" v-bind:height="height" 
-            v-bind:viewbox="viewbox"
-            v-on:wheel.prevent="zoomInOut"
-            v-on:pointerdown="captureOn"
-            v-on:pointerup="captureOff"
-            v-on:pointerleave="captureOff"
-            v-on:pointermove="drag">
-            <g ref="trans" v-bind:transform="transform">
-                <clickToPlayWrapper
-                v-for="n in trichordList" v-bind:key="genKey(n)"
-                :pitches="nodesToPitches(n)">
-                    <trichord 
-                    v-bind:notes="node2Notes(n)"
-                    v-bind:nodes="n"
-                    :pitches="nodesToPitches(n)"/>
-                </clickToPlayWrapper>
+        <g>
+            <clickToPlayWrapper
+            v-for="n in trichordList" v-bind:key="genKey(n)"
+            :pitches="nodesToPitches(n)">
+                <trichord 
+                v-bind:notes="node2Notes(n)"
+                v-bind:nodes="n"
+                :pitches="nodesToPitches(n)"/>
+            </clickToPlayWrapper>
 
-                <clickToPlayWrapper :transform="position(n[0])"
-                v-for="n in dichordList" v-bind:key="genKey(n)"
-                :pitches="nodesToPitches(n)">
-                    <dichord 
-                    v-bind:shape="dichordType(n)"
-                    v-bind:notes="node2Notes(n)"/>
-                </clickToPlayWrapper>
+            <clickToPlayWrapper :transform="position(n[0])"
+            v-for="n in dichordList" v-bind:key="genKey(n)"
+            :pitches="nodesToPitches(n)">
+                <dichord 
+                v-bind:shape="dichordType(n)"
+                v-bind:notes="node2Notes(n)"/>
+            </clickToPlayWrapper>
 
-                <clickToPlayWrapper :transform="position(n)"
-                v-for="n in nodeList" v-bind:key="genKey([n])"
-                :pitches="nodesToPitches([n])">
-                    <note-node v-bind:notes="node2Notes([n])"
-                    v-bind:nodes="[n]"/>
-                </clickToPlayWrapper>
-            </g>
-        </svg>
+            <clickToPlayWrapper :transform="position(n)"
+            v-for="n in nodeList" v-bind:key="genKey([n])"
+            :pitches="nodesToPitches([n])">
+                <note-node v-bind:notes="node2Notes([n])"
+                v-bind:nodes="[n]"/>
+            </clickToPlayWrapper>
+        </g>
     `
 
 })
@@ -467,33 +488,24 @@ Vue.component('note-chicken',{
 // The chicken-wire's main component: handles the layout and structure
 Vue.component('chicken-wire',{
     props: {
-        height: Number,
-        width: Number,
         notes: Array,
         intervals: {
             type: Array,
             default: () => [3,4,5]
+        },
+        bounds: {
+            type: Object
         }
     },
     components: {clickToPlayWrapper},
-    data: function(){return {
-        tx : 0,
-        ty : 0,
-        scale: 2.5,
-        captureMouse: false,
-        clickedPos: {x:0,y:0},
-        //size: {height: baseSize*10, width: baseSize*10},
-        //TODO: Set max scale factor according to dimensions
-        scaleBounds: {mini:1,maxi:5}
-    }},
     computed: {
         nodeList: function (){
             var nodes = [];
-            var xmin = Math.floor(-this.tx/(baseSize*xstep))
-            var xmax = Math.ceil((-this.tx+this.width/this.scale)/(baseSize*xstep))
+            var xmin = Math.floor(this.bounds.xmin/(baseSize*xstep))
+            var xmax = Math.ceil(this.bounds.xmax/(baseSize*xstep))
             for(xi of range(xmin,xmax+1)){
-                ymin = Math.floor(-this.ty/(baseSize)-xi/2)
-                ymax = Math.ceil((-this.ty+this.height/this.scale)/(baseSize)-xi/2)
+                ymin = Math.floor(this.bounds.ymin/(baseSize)-xi/2)
+                ymax = Math.ceil(this.bounds.ymax/(baseSize)-xi/2)
                 for(yi of range(ymin,ymax+1)){
                     nodes.push({x:xi,y:yi})
                 }
@@ -518,53 +530,11 @@ Vue.component('chicken-wire',{
                 nodes.push([{x:node.x,y:node.y},{x:node.x-1,y:node.y+1},{x:node.x,y:node.y+1}]);
             }
             return nodes;
-        },
-        transform: function(){
-            return `scale(${this.scale}) translate(${this.tx} ${this.ty})`
-        },
-        viewbox: function(){
-            return `0 0 ${this.width} ${this.height}`
         }
     },
     methods: {
         node2Notes: function (nodes){
             return nodes.map(node => this.notes[mod(-node.x*this.intervals[0]+node.y*this.intervals[2],12)])
-        },
-        //TODO: Fix zoom on firefox
-        zoomInOut: function (wheelEvent){
-            var multiplier = Math.exp(-wheelEvent.deltaY/600)
-            // Bound the multiplier to acceptable values
-            multiplier = bound(multiplier,this.scaleBounds.mini/this.scale,
-                                          this.scaleBounds.maxi/this.scale);
-            var pointer = {x:wheelEvent.offsetX,y:wheelEvent.offsetY};
-
-            //There is probably a better way to find it
-            var pointerSvg = ({x:pointer.x/this.scale-this.tx,
-                               y:pointer.y/this.scale-this.ty});
-
-            this.tx = (this.tx + pointerSvg.x)/multiplier - pointerSvg.x
-            this.ty = (this.ty + pointerSvg.y)/multiplier - pointerSvg.y
-            this.scale = this.scale*multiplier
-            return
-        },
-        drag: function (event){
-            if (this.captureMouse){
-                var dx = event.clientX - this.clickedPos.x
-                var dy = event.clientY - this.clickedPos.y
-                this.tx += dx / this.scale
-                this.ty += dy / this.scale
-                this.clickedPos = {x:event.clientX,y:event.clientY}
-            }
-            return
-        },
-        captureOn: function (event){
-            this.captureMouse = true
-            this.clickedPos = {x:event.clientX,y:event.clientY}
-            return
-        },
-        captureOff: function (event){
-            this.captureMouse = false
-            return
         },
         genKey: function (n){
             return "c_"+n.map(function textify(node){return `${node.x},${node.y}`}).join(' ')
@@ -575,39 +545,30 @@ Vue.component('chicken-wire',{
         }
     },
     template: `
-        <svg id="svg" class="tonnetz" 
-            v-bind:width="width" v-bind:height="height" 
-            v-bind:viewbox="viewbox"
-            v-on:wheel.prevent="zoomInOut"
-            v-on:pointerdown="captureOn"
-            v-on:pointerup="captureOff"
-            v-on:pointerleave="captureOff"
-            v-on:pointermove="drag">
-            <g ref="trans" v-bind:transform="transform">
-                <clickToPlayWrapper 
-                v-for="n in nodeList" v-bind:key="genKey([n])"
-                :pitches="nodesToPitches([n])">
-                    <note-chicken
-                    v-bind:notes="node2Notes([n])"
-                    v-bind:nodes="[n]"
-                    />
-                </clickToPlayWrapper>
-                <clickToPlayWrapper 
-                v-for="n in dichordList" v-bind:key="genKey(n)"
-                :pitches="nodesToPitches(n)">
-                    <dichord-chicken 
-                    v-bind:notes="node2Notes(n)"
-                    v-bind:nodes="n"/>
-                </clickToPlayWrapper>
-                <clickToPlayWrapper 
-                v-for="n in trichordList" v-bind:key="genKey(n)"
-                :pitches="nodesToPitches(n)">
-                    <trichord-chicken 
-                    v-bind:notes="node2Notes(n)"
-                    v-bind:nodes="n"/>
-                </clickToPlayWrapper>
-            </g>
-        </svg>
+        <g>
+            <clickToPlayWrapper 
+            v-for="n in nodeList" v-bind:key="genKey([n])"
+            :pitches="nodesToPitches([n])">
+                <note-chicken
+                v-bind:notes="node2Notes([n])"
+                v-bind:nodes="[n]"
+                />
+            </clickToPlayWrapper>
+            <clickToPlayWrapper 
+            v-for="n in dichordList" v-bind:key="genKey(n)"
+            :pitches="nodesToPitches(n)">
+                <dichord-chicken 
+                v-bind:notes="node2Notes(n)"
+                v-bind:nodes="n"/>
+            </clickToPlayWrapper>
+            <clickToPlayWrapper 
+            v-for="n in trichordList" v-bind:key="genKey(n)"
+            :pitches="nodesToPitches(n)">
+                <trichord-chicken 
+                v-bind:notes="node2Notes(n)"
+                v-bind:nodes="n"/>
+            </clickToPlayWrapper>
+        </g>
     `
 
 })
@@ -720,6 +681,7 @@ Vue.component('clock-octave',{
 // The App's main object, handling global concerns
 var proto = new Vue({
     el: '#proto',
+    components: {dragZoomSvg},
     data: {
         tonnetze: [
             [1,1,10],

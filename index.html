@@ -26,8 +26,16 @@
                     {{ tonnetz }}
                 </button>
                 <br/>
-                <tonnetz-plan v-if="type=='tonnetz'" v-bind:notes="notes" v-bind:height="400" v-bind:width="600" v-bind:intervals="intervals"></tonnetz-plan>
-                <chicken-wire v-else v-bind:notes="notes" v-bind:height="400" v-bind:width="600" v-bind:intervals="intervals"></chickenwire>
+                <drag-zoom-svg v-if="type=='tonnetz'" v-bind:height="400" v-bind:width="600" :scale-bounds="{mini:1,maxi:5}">
+                    <template v-slot="slotProps">
+                        <tonnetz-plan v-bind:notes="notes" v-bind:intervals="intervals" :bounds="slotProps.bounds"></tonnetz-plan>
+                    </template>
+                </drag-zoom-svg>
+                <drag-zoom-svg v-else v-bind:height="400" v-bind:width="600" :scale-bounds="{mini:1,maxi:5}">
+                    <template v-slot="slotProps">
+                            <chicken-wire v-bind:notes="notes" :bounds="slotProps.bounds" v-bind:intervals="intervals"></chickenwire>
+                    </template>
+                </drag-zoom-svg>
                 <br/>
                 
             </div>
