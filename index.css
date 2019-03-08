@@ -72,15 +72,26 @@ text {
 .activeNode {
     fill : yellow;
 }
+.visitedNode {
+    fill : lightyellow;
+}
 
 .activeDichord {
     /*stroke : yellow;*/
     stroke-width : 3;
 }
 
+.visitedDichord {
+    stroke-width : 2;
+}
+
 .activeTrichord {
     fill : green;
 } 
+
+.visitedTrichord {
+    fill : lightgreen;
+}
 
 .clockPolygon{
     fill : blue;

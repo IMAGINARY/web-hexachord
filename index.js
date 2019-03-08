@@ -1,5 +1,8 @@
 //Author: Corentin Guichaoua
 
+// Vue.config.devtools = true
+// Vue.config.performance = true
+
 var sqrt2=1.414
 var xstep=Math.sqrt(3)/2
 var baseSize=50
@@ -20,6 +23,15 @@ function* range (begin, end, interval = 1) {
         yield i;
     }
 }
+
+function gcd(a, b) {
+    if ( ! b) {
+        return a;
+    }
+
+    return gcd(b, a % b);
+};
+
 
 //Used for validation
 function isSubset(a, b){
@@ -82,10 +94,22 @@ let clickToPlayWrapper = {
 // Provides the isActive check
 // Must still be used in the template to have any effect
 var activableMixin = {
-    props: ['notes'],
+    props: {
+        notes:{
+            type: Array,
+            required: true
+        },
+        forceState:{ // -1, 0, 1, 2 for free, inactive, traversed and active respectively
+            type: Number,
+            default: -1
+        }
+    },
     computed: {
         isActive : function(){
-            return this.notes.every(elem => elem.count > 0);
+            return (this.forceState===-1 && this.notes.every(elem => elem.count > 0)) || this.forceState===2;
+        },
+        semiActive: function(){
+            return this.forceState === 1;
         }
     }
 }
@@ -98,18 +122,9 @@ const logicalToSvg = node => ({x:logicalToSvgX(node), y:logicalToSvgY(node)})
 // Note component : a clickable circle with the note name
 let noteTonnetz = {
     mixins: [activableMixin],
-    props: {
-        notes:{
-            type: Array,
-            required: true//,
-            //validator: function(value){
-            //    return isSubset(value,this.$root.notes);
-            //}
-        }
-    },
     template: `
         <g>
-            <circle v-bind:class="{activeNode:isActive}"
+            <circle v-bind:class="{activeNode:isActive, visitedNode:semiActive}"
                 r="12">
             </circle> 
             <text>
@@ -123,10 +138,6 @@ let noteTonnetz = {
 let dichordTonnetz = {
     mixins: [activableMixin],
     props: {
-        notes:{
-            type: Array,
-            required: true
-        },
         shape:{
             type: Array,
             required: true
@@ -150,7 +161,7 @@ let dichordTonnetz = {
     },
     template: `
     <g>
-        <line v-bind:class="{activeDichord:isActive}" 
+        <line v-bind:class="{activeDichord:isActive, visitedDichord:semiActive}" 
             v-bind="coords">
         </line> 
         <circle v-bind:class="{activeDichord:isActive}"
@@ -164,10 +175,6 @@ let dichordTonnetz = {
 let trichordTonnetz = {
     mixins: [activableMixin],
     props: {
-        notes: {
-            type: Array,
-            required: true
-        },
         shape: {
             type: Array,
             required: true
@@ -182,7 +189,7 @@ let trichordTonnetz = {
         }
     },
     template: `
-        <polygon v-bind:class="{activeTrichord:isActive}" 
+        <polygon v-bind:class="{activeTrichord:isActive, visitedTrichord:semiActive}" 
             v-bind:points="points"/>
         `
 };
@@ -291,7 +298,8 @@ let tonnetzLike = {
                 ymin = Math.floor(this.bounds.ymin/(baseSize)-xi/2)
                 ymax = Math.ceil(this.bounds.ymax/(baseSize)-xi/2)
                 for(yi of range(ymin,ymax+1)){
-                    nodes.push({x:xi,y:yi})
+                    let node = {x:xi,y:yi};
+                    nodes.push(node)
                 }
             }
             return nodes;
@@ -348,32 +356,189 @@ let tonnetzPlan = {
         'trichord': trichordTonnetz
     },
     extends: tonnetzLike,
+    props:{
+        trace: {
+            type: Boolean,
+            default: false
+        }
+    },
+    data: function(){return {
+        trajectory : [], // The array of the traversed note nodes. A trajectory element should be a pair of a MIDI event and its associated position
+        active: [],
+        visited: new Set()
+    }},
+    computed:{
+        nodeStateList: function(){
+            return this.nodeList.map(node => ({node,status:this.status(node)}) );
+        },
+        dichordStateList: function(){
+            return this.dichordList.map(nodes => ({nodes,status:this.chordStatus(nodes)}) );
+        },
+        trichordStateList: function(){
+            return this.trichordList.map(nodes => ({nodes,status:this.chordStatus(nodes)}) );
+        }
+    },
+    watch:{
+        trace: function(){
+            this.resetTrajectory();
+        },
+        intervals : function(){
+            this.resetTrajectory();
+        }
+    },
+    methods:{
+        status: function(node){
+            if (this.trace){
+                let isActive = this.active.some(nodeB => nodeB.x==node.x && nodeB.y==node.y);
+                    if(isActive){
+                        return 2;
+                    }else{
+                        let traversed = this.trajectory.some(nodeB => nodeB.x==node.x && nodeB.y==node.y);
+                        if(traversed){
+                            return 1;
+                        }
+                        else{
+                            return 0;
+                        }
+                    }
+            }else return -1;
+        },
+        chordStatus: function(nodes){
+            if(this.trace){
+                if(nodes.every(node => this.active.some(nodeB => nodeB.x==node.x && nodeB.y==node.y))){
+                    return 2;
+                }else if(this.visited.has(this.genKey(nodes))){
+                    return 1;
+                }else{
+                    return 0;
+                }
+            }else{
+                return -1;
+            }
+        },
+        //TODO: Call whenever intervals or trace is changed
+        resetTrajectory: function(){
+            this.trajectory = [];
+            this.active = [];
+            this.visited.clear();
+        },
+        //Returns the node matching the note closest to the provided node
+        closestNode(node,note){
+            // TODO: compute closest between nodes/note sets
+            // Dumb way: enumerate all neighbours up to distance 3 (max for 12 tone Tonnetze)
+            const d1 = [{x:0,y:1},{x:0,y:-1},{x:1,y:0},{x:-1,y:0},{x:-1,y:1},{x:1,y:-1}]; // Neighbours of distance 1
+            const d2 = [{x:0,y:2},{x:1,y:1},{x:0,y:2},{x:0,y:-2},{x:-1,y:-1},{x:-2,y:0}, //z=0
+                        {x:-1,y:2},{x:-2,y:1},{x:1,y:-2},{x:2,y:-1},{x:-2,y:2},{x:2,y:-2}]; // Neighbours of distance 2
+            const d3 = [{x:0,y:3},{x:1,y:2},{x:2,y:1},{x:3,y:0},{x:0,y:-3},{x:-1,y:-2},{x:-2,y:-1},{x:-3,y:0},
+                        {x:-3,y:3},{x:-3,y:2},{x:-3,y:1},{x:3,y:-3},{x:3,y:-2},{x:3,y:-1},
+                        {x:-2,y:3},{x:-1,y:3},{x:2,y:-3},{x:1,y:-3}];
+            if(mod(this.nodesToPitches([node])[0]-57,12)==note){
+                return node;
+            }
+            for(neighbourList of [d1,d2,d3]){ //This should be enough as no distance should exceed 3
+                for(nodeOffset of neighbourList){
+                    let newNode={x:node.x+nodeOffset.x,y:node.y+nodeOffset.y};
+                    if(mod(this.nodesToPitches([newNode])[0]-57,12)==note){
+                        return newNode;
+                    }
+                }
+            }
+            console.log("Couldn't find closest neighbour");
+        },
+        updateChords: function(){
+            for(node of this.active){
+                for(dnode of [{x:1,y:0},{x:0,y:1},{x:-1,y:1}]){
+                    if(this.active.some(nodeB => nodeB.x==node.x+dnode.x && nodeB.y==node.y+dnode.y)){
+                        let nodes = [node,{x:node.x+dnode.x,y:node.y+dnode.y}];
+                        this.visited.add(this.genKey(nodes));
+                    }
+                }
+                for(dnodes of [{x1:1,x2:0,y1:0,y2:1},{x1:-1,x2:0,y1:1,y2:1}]){
+                    if(this.active.some(nodeB => nodeB.x==node.x+dnodes.x1 && nodeB.y==node.y+dnodes.y1) 
+                    && this.active.some(nodeB => nodeB.x==node.x+dnodes.x2 && nodeB.y==node.y+dnodes.y2)){
+                        let nodes = [node,{x:node.x+dnodes.x1,y:node.y+dnodes.y1},{x:node.x+dnodes.x2,y:node.y+dnodes.y2}];
+                        this.visited.add(this.genKey(nodes));
+                    }
+                }
+            }
+        },
+        addToTrajectory: function(pitches){
+            if(this.trace){
+                // First version: consider multi-pitched events as successive events
+                // TODO: group midi events in close succession for processing
+                // TODO: override position if the event comes from playing the Tonnetz
+                for(pitch of pitches){
+                    //Check if the note is reachable in this Tonnetz
+                    let noteNumber = mod(pitch - 9,12);
+                    let tonnetzGCD = this.intervals.reduce(gcd,12);
+                    if(!(noteNumber%tonnetzGCD)){
+                        // The reference is the last node, or (0,0) if this is the first node
+                        let reference = this.trajectory.length > 0 ? this.trajectory[this.trajectory.length-1] : {x:0,y:0};
+                        let node = this.closestNode(reference,noteNumber);
+                        this.trajectory.push(node);
+                        this.active.push(node);
+                    }else{
+                        console.log("Unreachable note")
+                    }
+                }
+                this.updateChords();
+            }
+        },
+        removeActive: function(pitches){
+            if(this.trace){
+                for(pitch of pitches){
+                    let firstMatch = this.active.findIndex(node => mod(this.nodesToPitches([node]),12) === mod(pitch,12));
+                    if(firstMatch !== -1){
+                        this.active.splice(firstMatch,1);
+                    }else{
+                        console.log(`Couldn't remove pitch ${pitch} from active nodes`);
+                    }
+                }
+            }
+        },
+        midiDispatch: function(midiEvent){
+            if(midiEvent.isNoteOn()){
+                this.addToTrajectory([midiEvent.getNote()]);
+            }else if(midiEvent.isNoteOff()){
+                this.removeActive([midiEvent.getNote()]);
+            }
+        }
+    },
+    mounted(){
+        //TODO: Override for events generated from within the Tonnetz (position is known)
+        piano.connect(this.midiDispatch);
+        // midiBus.$on('note-on',this.addToTrajectory);
+        // midiBus.$on('note-off',this.removeActive);
+    },
     //TODO: Get the template into the base component (need to control the layering of elements)
     template: `
         <g>
-            <clickToPlayWrapper :transform="position(n[0])"
-            v-for="n in trichordList" v-bind:key="genKey(n)"
-            :pitches="nodesToPitches(n)">
+            <clickToPlayWrapper :transform="position(n.nodes[0])"
+            v-for="n in trichordStateList" v-bind:key="genKey(n.nodes)"
+            :pitches="nodesToPitches(n.nodes)">
                 <trichord 
-                v-bind:notes="node2Notes(n)"
-                v-bind:nodes="n"
-                :shape="shape(n)"
+                v-bind:notes="node2Notes(n.nodes)"
+                v-bind:nodes="n.nodes"
+                :shape="shape(n.nodes)"
+                :forceState="n.status"
                 />
             </clickToPlayWrapper>
 
-            <clickToPlayWrapper :transform="position(n[0])"
-            v-for="n in dichordList" v-bind:key="genKey(n)"
-            :pitches="nodesToPitches(n)">
+            <clickToPlayWrapper :transform="position(n.nodes[0])"
+            v-for="n in dichordStateList" v-bind:key="genKey(n.nodes)"
+            :pitches="nodesToPitches(n.nodes)">
                 <dichord 
-                v-bind:shape="shape(n)"
-                v-bind:notes="node2Notes(n)"/>
+                v-bind:shape="shape(n.nodes)"
+                v-bind:notes="node2Notes(n.nodes)"
+                :forceState="n.status"/>
             </clickToPlayWrapper>
 
-            <clickToPlayWrapper :transform="position(n)"
-            v-for="n in nodeList" v-bind:key="genKey([n])"
-            :pitches="nodesToPitches([n])">
-                <note v-bind:notes="node2Notes([n])"
-                v-bind:nodes="[n]"/>
+            <clickToPlayWrapper :transform="position(n.node)"
+            v-for="n in nodeStateList" v-bind:key="genKey([n.node])"
+            :pitches="nodesToPitches([n.node])">
+                <note v-bind:notes="node2Notes([n.node])"
+                v-bind:nodes="[n.node]"
+                :forceState="n.status"/>
             </clickToPlayWrapper>
         </g>
     `
@@ -642,6 +807,8 @@ Vue.component('clock-octave',{
     `
 })
 
+
+
 // The App's main object, handling global concerns
 var proto = new Vue({
     el: '#proto',
@@ -679,7 +846,8 @@ var proto = new Vue({
         ],
         loadlog: "*** MIDI.js is loading soundfont... ***",
         //TODO: Find a way to have nice output on Safari and Firefox
-        synth: JZZ.synth.Tiny(),//JZZ.synth.MIDIjs({ 
+        synth: JZZ.synth.Tiny(),
+        //synth:JZZ.synth.MIDIjs({ 
             //TODO: Use a soundfont from our own server
             //soundfontUrl: "https://raw.githubusercontent.com/mudcube/MIDI.js/master/examples/soundfont/", 
             //instrument: "acoustic_grand_piano" })
@@ -692,7 +860,8 @@ var proto = new Vue({
         
         //TODO: Ask which Midi controller to use instead of blindly picking the first
         keyboard: JZZ().openMidiIn(),
-        player: JZZ.MIDI.SMF().player()
+        player: JZZ.MIDI.SMF().player(),
+        trace: false
     },
     computed: {
         buttonText: function(){
@@ -745,11 +914,13 @@ var proto = new Vue({
                 this.player.play();
             }
         },
-        //TODO: add a button to manually trigger this
         resetNotes: function(){
             for (note of this.notes){
                 note.count = 0;
             }
+        },
+        traceToggle: function(){
+            this.trace = !this.trace;
         },
         //TODO: encapsulate this in a loader component
         load: function(data, name) {

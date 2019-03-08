@@ -28,12 +28,12 @@
                 <br/>
                 <drag-zoom-svg v-if="type=='tonnetz'" v-bind:height="400" v-bind:width="600" :scale-bounds="{mini:1,maxi:5}">
                     <template v-slot="slotProps">
-                        <tonnetz-plan v-bind:notes="notes" v-bind:intervals="intervals" :bounds="slotProps.bounds"></tonnetz-plan>
+                        <tonnetz-plan v-bind:notes="notes" v-bind:intervals="intervals" :bounds="slotProps.bounds" :trace="trace"></tonnetz-plan>
                     </template>
                 </drag-zoom-svg>
                 <drag-zoom-svg v-else v-bind:height="400" v-bind:width="600" :scale-bounds="{mini:1,maxi:5}">
                     <template v-slot="slotProps">
-                            <chicken-wire v-bind:notes="notes" :bounds="slotProps.bounds" v-bind:intervals="intervals"></chickenwire>
+                        <chicken-wire v-bind:notes="notes" :bounds="slotProps.bounds" v-bind:intervals="intervals"></chickenwire>
                     </template>
                 </drag-zoom-svg>
                 <br/>
@@ -42,8 +42,10 @@
              
             <div class="column">
                 <button id=btn v-on:click='playStop' disabled> {{ buttonText }} </button>
-                <p> {{ loadlog }}</p>
-
+                <br/>
+                <button id=reset @click='resetNotes'>Click to reset notes</button>
+                <br/>
+                <button id=trace @click='traceToggle'>Trace mode {{trace ? 'ON' : 'OFF'}}</button>
                 <p>
                     From file: <input type=file id=file size=40 v-on:change='fromFile();'>
                 </p>
