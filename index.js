@@ -348,7 +348,7 @@ let tonnetzLike = {
 };
 
 
-let tonnetzPlan = {
+let tonnetzPlan = {
     components: {
         clickToPlayWrapper,
         'note': noteTonnetz,
@@ -393,8 +393,7 @@ let tonnetzPlan = {
                     if(isActive){
                         return 2;
                     }else{
-                        let traversed = this.trajectory.some(nodeB => nodeB.x==node.x && nodeB.y==node.y);
-                        if(traversed){
+                        if(this.visited.has(this.genKey([node]))){
                             return 1;
                         }
                         else{
@@ -465,7 +464,7 @@ let tonnetzPlan = {
         addToTrajectory: function(pitches){
             if(this.trace){
                 // First version: consider multi-pitched events as successive events
-                // TODO: group midi events in close succession for processing
+                // TODO: group midi events in close succession for processing (faster and better trajectory)
                 // TODO: override position if the event comes from playing the Tonnetz
                 for(pitch of pitches){
                     //Check if the note is reachable in this Tonnetz
@@ -477,6 +476,7 @@ let tonnetzPlan = {
                         let node = this.closestNode(reference,noteNumber);
                         this.trajectory.push(node);
                         this.active.push(node);
+                        this.visited.add(this.genKey([node]));
                     }else{
                         console.log("Unreachable note")
                     }
@@ -665,7 +665,7 @@ let noteChicken = {
 }
 
 // The chicken-wire's main component: handles the layout and structure
-let chickenWire = {
+let chickenWire = {
     components: {
         clickToPlayWrapper,
         'note': noteChicken,
@@ -931,6 +931,7 @@ var proto = new Vue({
                 this.loadlog = name;
                 btn.disabled = false;
             } catch (e) {
+                console.log(e);
                 this.loadlog = e;
                 throw e;
             }
