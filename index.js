@@ -347,6 +347,10 @@ let tonnetzLike = {
     }
 };
 
+var record = {
+    startTime:undefined,
+    SMF:undefined
+}
 
 let tonnetzPlan = {
     components: {
@@ -415,11 +419,14 @@ let tonnetzPlan = {
                 return -1;
             }
         },
-        //TODO: Call whenever intervals or trace is changed
         resetTrajectory: function(){
             this.trajectory = [];
             this.active = [];
             this.visited.clear();
+            record.SMF = new JZZ.MIDI.SMF(0,500); // 500 tpb, 120 bpm => 1 tick per millisecond
+            record.SMF.push(new JZZ.MIDI.SMF.MTrk());
+            record.SMF[0].add(0,JZZ.MIDI.smfBPM(120));
+            record.startTime = new Date().getTime();
         },
         //Returns the node matching the note closest to the provided node
         closestNode(node,note){
@@ -488,19 +495,29 @@ let tonnetzPlan = {
             if(this.trace){
                 for(pitch of pitches){
                     let firstMatch = this.active.findIndex(node => mod(this.nodesToPitches([node]),12) === mod(pitch,12));
+                    let node = this.active[firstMatch];
                     if(firstMatch !== -1){
                         this.active.splice(firstMatch,1);
                     }else{
                         console.log(`Couldn't remove pitch ${pitch} from active nodes`);
                     }
+                    this.trajectory.push(node)
                 }
             }
         },
         midiDispatch: function(midiEvent){
-            if(midiEvent.isNoteOn()){
-                this.addToTrajectory([midiEvent.getNote()]);
-            }else if(midiEvent.isNoteOff()){
-                this.removeActive([midiEvent.getNote()]);
+            if(this.trace){
+                let index = record.length       
+                if(midiEvent.isNoteOn()){
+                    record.SMF[0].add(new Date().getTime()-record.startTime,JZZ.MIDI.noteOn(0,midiEvent.getNote(),midiEvent[2]))
+                    this.addToTrajectory([midiEvent.getNote()]);
+                }else if(midiEvent.isNoteOff()){
+                    this.removeActive([midiEvent.getNote()]);
+                    record.SMF[0].add(new Date().getTime()-record.startTime,JZZ.MIDI.noteOff(0,midiEvent.getNote()));
+                }else{
+                    record.SMF[0].add(new Date().getTime()-record.startTime,midiEvent);
+                }
+                console.log(`record.SMF[0].add(${new Date().getTime()-record.startTime},${midiEvent});`)
             }
         }
     },
@@ -984,6 +1001,42 @@ var proto = new Vue({
         fromBase64: function () {
             this.clear();
             this.load(JZZ.lib.fromBase64(data), 'Base64 data');
+        },
+        fromTrajectory : function (rotate = false, translate = 0) {
+            record.SMF[0].add(new Date().getTime() - record.startTime,JZZ.MIDI.smfEndOfTrack());
+            if(rotate){
+                this.rotateTrajectory(record.SMF[0]);
+            }
+            if(translate){
+                this.translateTrajectory(record.SMF[0],translate);
+            }
+            this.player = record.SMF.player();
+            this.player.connect(piano);
+            this.player.play();
+            btn.disabled = false;
+        },
+        //Simple version operating on pitches alone
+        rotateTrajectory : function (SMFTrack) {
+            let symmetryCenter = undefined;
+            for (SME of SMFTrack){
+                let note = SME.getNote();
+                if(note !== undefined){
+                    if (symmetryCenter === undefined){
+                        symmetryCenter = note;
+                    }else{
+                        note = 2*symmetryCenter - note
+                    }
+                    SME.setNote(note);
+                }
+            }
+        },
+        translateTrajectory : function (SMFTrack,translate) {
+            for (SME of SMFTrack){
+                let note = SME.getNote();
+                if(note !== undefined){
+                    SME.setNote(note+translate);
+                }
+            }
         },
         noteOn: function(pitches){
             //var notes = this.node2Notes(nodes);

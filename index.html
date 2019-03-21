@@ -46,11 +46,17 @@
                 <button id=reset @click='resetNotes'>Click to reset notes</button>
                 <br/>
                 <button id=trace @click='traceToggle'>Trace mode {{trace ? 'ON' : 'OFF'}}</button>
+                <br/>
+                <button id=trace @click='fromTrajectory()'>Replay</button>
+                <br/>
+                <button id=trace @click='fromTrajectory(true,0)'>Rotate</button>
+                <br/>
+                <button id=trace @click='fromTrajectory(false,1)'>Translate</button>
                 <p>
                     From file: <input type=file id=file size=40 v-on:change='fromFile();'>
                 </p>
                 <p>from URL:
-                <form v-on:submit='fromURL(); return false;'>
+                <form v-on:submit.prevent='fromURL(); return false;'>
                     <p>
                         <input type=text id=url value='https://jazz-soft.net/demo/midi/furelise.mid' size=80>
                         <input type=submit value=Submit...>
