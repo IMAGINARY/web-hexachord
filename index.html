@@ -47,11 +47,10 @@
                 <br/>
                 <button id=trace @click='traceToggle'>Trace mode {{trace ? 'ON' : 'OFF'}}</button>
                 <br/>
-                <button id=trace @click='fromTrajectory()'>Replay</button>
-                <br/>
-                <button id=trace @click='fromTrajectory(true,0)'>Rotate</button>
-                <br/>
-                <button id=trace @click='fromTrajectory(false,1)'>Translate</button>
+                <button id=recordButton @click='recordToggle'>{{recordText}}</button>
+                <button id=replay @click='fromTrajectory()' disabled >Replay</button>
+                <button id=rotate @click='fromTrajectory(true,0)' disabled>Rotate</button>
+                <button id=translate @click='fromTrajectory(false,1)' disabled>Translate</button>
                 <p>
                     From file: <input type=file id=file size=40 v-on:change='fromFile();'>
                 </p>

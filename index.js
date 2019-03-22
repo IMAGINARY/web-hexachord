@@ -349,7 +349,8 @@ let tonnetzLike = {
 
 var record = {
     startTime:undefined,
-    SMF:undefined
+    SMF:undefined,
+    recording:false
 }
 
 let tonnetzPlan = {
@@ -423,10 +424,6 @@ let tonnetzPlan = {
             this.trajectory = [];
             this.active = [];
             this.visited.clear();
-            record.SMF = new JZZ.MIDI.SMF(0,500); // 500 tpb, 120 bpm => 1 tick per millisecond
-            record.SMF.push(new JZZ.MIDI.SMF.MTrk());
-            record.SMF[0].add(0,JZZ.MIDI.smfBPM(120));
-            record.startTime = new Date().getTime();
         },
         //Returns the node matching the note closest to the provided node
         closestNode(node,note){
@@ -509,15 +506,20 @@ let tonnetzPlan = {
             if(this.trace){
                 let index = record.length       
                 if(midiEvent.isNoteOn()){
-                    record.SMF[0].add(new Date().getTime()-record.startTime,JZZ.MIDI.noteOn(0,midiEvent.getNote(),midiEvent[2]))
                     this.addToTrajectory([midiEvent.getNote()]);
                 }else if(midiEvent.isNoteOff()){
                     this.removeActive([midiEvent.getNote()]);
+                    
+                }
+            }
+            if(record.recording){
+                if(midiEvent.isNoteOn()){
+                    record.SMF[0].add(new Date().getTime()-record.startTime,JZZ.MIDI.noteOn(0,midiEvent.getNote(),midiEvent[2]))
+                }else if(midiEvent.isNoteOff()){
                     record.SMF[0].add(new Date().getTime()-record.startTime,JZZ.MIDI.noteOff(0,midiEvent.getNote()));
                 }else{
                     record.SMF[0].add(new Date().getTime()-record.startTime,midiEvent);
                 }
-                console.log(`record.SMF[0].add(${new Date().getTime()-record.startTime},${midiEvent});`)
             }
         }
     },
@@ -878,7 +880,8 @@ var proto = new Vue({
         //TODO: Ask which Midi controller to use instead of blindly picking the first
         keyboard: JZZ().openMidiIn(),
         player: JZZ.MIDI.SMF().player(),
-        trace: false
+        trace: false,
+        recording: false
     },
     computed: {
         buttonText: function(){
@@ -886,6 +889,13 @@ var proto = new Vue({
                 return 'Stop'
             }else{
                 return 'Play'
+            }
+        },
+        recordText: function(){
+            if(this.recording){
+                return 'Stop recording';
+            }else{
+                return 'Start recording';
             }
         }
     },
@@ -1003,7 +1013,7 @@ var proto = new Vue({
             this.load(JZZ.lib.fromBase64(data), 'Base64 data');
         },
         fromTrajectory : function (rotate = false, translate = 0) {
-            record.SMF[0].add(new Date().getTime() - record.startTime,JZZ.MIDI.smfEndOfTrack());
+            
             if(rotate){
                 this.rotateTrajectory(record.SMF[0]);
             }
@@ -1048,6 +1058,26 @@ var proto = new Vue({
             //var notes = this.node2Notes(nodes);
             for (var pitch of pitches){
                 piano.noteOff(0,pitch,100);
+            }
+        },
+        recordToggle: function(){
+            if(this.recording){
+                replay.disabled=false;
+                rotate.disabled=false;
+                translate.disabled=false;
+                this.recording = false;
+                record.SMF[0].add(new Date().getTime() - record.startTime,JZZ.MIDI.smfEndOfTrack());
+                record.recording = false;
+            }else{
+                replay.disabled=true;
+                rotate.disabled=true;
+                translate.disabled=true;
+                this.recording = true;
+                record.SMF = new JZZ.MIDI.SMF(0,500); // 500 tpb, 120 bpm => 1 tick per millisecond
+                record.SMF.push(new JZZ.MIDI.SMF.MTrk());
+                record.SMF[0].add(0,JZZ.MIDI.smfBPM(120));
+                record.startTime = new Date().getTime();
+                record.recording = true;
             }
         }
     },
