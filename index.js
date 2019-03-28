@@ -38,7 +38,7 @@ function isSubset(a, b){
     return a.every(val => b.includes(val));
 }
 
-var piano = JZZ.input.Kbd({at:'piano', from:'C3', to:'G7', onCreate:function() {
+var piano = JZZ.input.Kbd({at:'piano', from:'C3', to:'B7', onCreate:function() {
     this.getBlackKeys().setStyle({color:'#fff'});
     this.getKey('C5').setInnerHTML('<span class=inner>W</span>');
     this.getKey('C#5').setInnerHTML('<span class=inner>S</span>');
@@ -125,7 +125,7 @@ let noteTonnetz = {
     template: `
         <g>
             <circle v-bind:class="{activeNode:isActive, visitedNode:semiActive}"
-                r="12">
+                r="12" v-bind:data-key="notes[0].text">
             </circle> 
             <text>
                 {{ notes[0].text }}
@@ -264,7 +264,7 @@ let dragZoomSvg = {
     template: `
         <svg id="svg" class="tonnetz" 
         v-bind:width="width" v-bind:height="height" 
-        v-bind:viewbox="viewbox"
+        v-bind:viewBox="viewbox"
         v-on:wheel.prevent="zoomInOut"
         v-on:pointerdown="captureOn"
         v-on:pointerup="captureOff"
@@ -679,7 +679,7 @@ let noteChicken = {
     },
     template: `
         <polygon v-bind:class="{activeNode:isActive}" 
-            v-bind:points="points"/>
+            v-bind:points="points" v-bind:data-key="notes[0].text"/>
         `
 }
 
@@ -740,7 +740,7 @@ Vue.component('note-clock',{
     template: `
         <g v-bind:id="id">
             <circle v-bind:class="{activeNode:isActive}"
-                v-bind:cx="x" v-bind:cy="y" r="12">
+                v-bind:cx="x" v-bind:cy="y" r="12" v-bind:data-key="notes[0].text">
             </circle> 
             <text v-bind:x="x" v-bind:y="y">
                 {{ notes[0].text }}
@@ -807,7 +807,7 @@ Vue.component('clock-octave',{
     template: `
         <svg id="svg" class="clock" 
             v-bind:width="width" v-bind:height="height" 
-            v-bind:viewbox="viewbox">
+            v-bind:viewBox="viewbox">
             <circle v-bind:cx="center.x" v-bind:cy="center.y" v-bind:r="radius"/>
             <polygon v-if="anyNote" class=clockPolygon
                 v-bind:points="points"/>
@@ -881,7 +881,8 @@ var proto = new Vue({
         keyboard: JZZ().openMidiIn(),
         player: JZZ.MIDI.SMF().player(),
         trace: false,
-        recording: false
+        recording: false,
+        modal: false
     },
     computed: {
         buttonText: function(){

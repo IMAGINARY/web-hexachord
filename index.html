@@ -1,31 +1,34 @@
-<!-- Author: Corentin Guichaoua-->
-
+<!doctype html>
 <html>
     <head>
-        <link rel="stylesheet" href="index.css">
-        <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/jzz"></script>
-        <script src="https://jazz-soft.net//script/MIDI.js"></script>
-        <script src="https://jazz-soft.net//script/JZZ.synth.MIDIjs.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/jzz-synth-osc"></script>
-        <script src="https://jazz-soft.net/script/JZZ.synth.Tiny.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/jzz-input-kbd"></script>
-        <script src="https://cdn.jsdelivr.net/npm/jzz-midi-smf"></script>
+        <meta charset="utf-8">
+        <title>The Tonnetz – One Key, Many Representations</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
 
+        <link rel="stylesheet" href="index.css">
+        <link href="https://fonts.googleapis.com/css?family=Quicksand:400,500" rel="stylesheet">
     </head>
     <body>
+        <div class=header>
+            <div style="background: #b30469"></div>
+            <div style="background: #822b9b"></div>
+            <div style="background: #5053cd"></div>
+            <div style="background: #1f7aff"></div>
+            <div style="background: #258dab"></div>
+            <div style="background: #2ba058"></div>
+            <div style="background: #31b304"></div>
+            <div style="background: #76a90d"></div>
+            <div style="background: #e6bd00"></div>
+            <div style="background: #ff941f"></div>
+            <div style="background: #e66438"></div>
+            <div style="background: #cc3450"></div>
+        </div>
+
         <h1>The Tonnetz</h1>
         <h2>One key — Many Representations</h2>
+
         <div id="proto">
-            <div class="column" style="text-align:center;">
-                <button v-for="tonnetz in tonnetze" v-on:click="(intervals=tonnetz) ^ (type='tonnetz')" v-bind:class="{activeButton:arrayEquals(tonnetz,intervals) && type=='tonnetz'}">
-                    {{ tonnetz }}
-                </button>
-                <br/>
-                <button v-for="tonnetz in tonnetze" v-on:click="(intervals=tonnetz) ^ (type='chicken')" v-bind:class="{activeButton:arrayEquals(tonnetz,intervals) && type=='chicken'}">
-                    {{ tonnetz }}
-                </button>
-                <br/>
+            <div class="col-1" v-cloak>
                 <drag-zoom-svg v-if="type=='tonnetz'" v-bind:height="400" v-bind:width="600" :scale-bounds="{mini:1,maxi:5}">
                     <template v-slot="slotProps">
                         <tonnetz-plan v-bind:notes="notes" v-bind:intervals="intervals" :bounds="slotProps.bounds" :trace="trace"></tonnetz-plan>
@@ -36,49 +39,53 @@
                         <chicken-wire v-bind:notes="notes" :bounds="slotProps.bounds" v-bind:intervals="intervals"></chickenwire>
                     </template>
                 </drag-zoom-svg>
-                <br/>
-                
+                <div class="button-row">
+                    <button v-for="tonnetz in tonnetze" v-on:click="(intervals=tonnetz) ^ (type='tonnetz')" v-bind:class="{activeButton:arrayEquals(tonnetz,intervals) && type=='tonnetz'}">{{ tonnetz.join(', ') }}</button>
+                    <button v-for="tonnetz in tonnetze" v-on:click="(intervals=tonnetz) ^ (type='chicken')" v-bind:class="{activeButton:arrayEquals(tonnetz,intervals) && type=='chicken'}">{{ tonnetz.join(', ') }}</button>
+                </div>
             </div>
-             
-            <div class="column">
-                <button id=btn v-on:click='playStop' disabled> {{ buttonText }} </button>
-                <br/>
-                <button id=reset @click='resetNotes'>Click to reset notes</button>
-                <br/>
-                <button id=trace @click='traceToggle'>Trace mode {{trace ? 'ON' : 'OFF'}}</button>
-                <br/>
+
+            <div class="col-2" v-cloak>
+                <clock-octave v-bind:notes="notes" v-bind:height="200" v-bind:width="200" v-bind:intervals="1"></clock-octave>
+                <clock-octave v-bind:notes="notes" v-bind:height="200" v-bind:width="200" v-bind:intervals="7"></clock-octave>
+                <div class="key-selector">
+                    <button v-bind:data-key="note.text" v-for="note in notes" v-on:click="note.count=1-note.count" v-bind:class="{activeNode: note.count>0}">{{ note.text }}</button>
+                </div>
+            </div>
+
+            <div class="record" v-cloak>
+                <button id=load v-on:click='modal = true'>Load Midi File</button>
                 <button id=recordButton @click='recordToggle'>{{recordText}}</button>
+                <button id=btn v-on:click='playStop' disabled> {{ buttonText }} </button>
                 <button id=replay @click='fromTrajectory()' disabled >Replay</button>
                 <button id=rotate @click='fromTrajectory(true,0)' disabled>Rotate</button>
                 <button id=translate @click='fromTrajectory(false,1)' disabled>Translate</button>
-                <p>
-                    From file: <input type=file id=file size=40 v-on:change='fromFile();'>
-                </p>
-                <p>from URL:
-                <form v-on:submit.prevent='fromURL(); return false;'>
-                    <p>
+                <button id=trace @click='traceToggle'>Tracing {{trace ? 'On' : 'Off'}}</button>
+                <button id=reset @click='resetNotes'>Reset</button>
+                <div class="modal-background" v-show="modal" v-on:click="modal = false"></div>
+                <div class="modal" v-show="modal">
+                    <p><input type=file id=file size=40 v-on:change='fromFile();'></p>
+                    <hr>
+                    <form v-on:submit.prevent='fromURL(); modal = false; return false;'>
                         <input type=text id=url value='https://jazz-soft.net/demo/midi/furelise.mid' size=80>
-                        <input type=submit value=Submit...>
-                    </p>
-                </form>
-                </p>
-                <p>
-                    from Base64 string: <button v-on:click='fromBase64();'>Read...</button>
-                </p>
-                <br/>
-                <clock-octave v-bind:notes="notes" v-bind:height="200" v-bind:width="200" v-bind:intervals="1"></clock-octave>
-                <clock-octave v-bind:notes="notes" v-bind:height="200" v-bind:width="200" v-bind:intervals="7"></clock-octave>
-            </div> 
-            
-            <br/>
-            <button v-for="note in notes" v-on:click="note.count=1-note.count" v-bind:class="{activeButton:note.count>0}">
-                {{ note.text }}
-            </button> 
-            <br/>
+                        <button type=submit>Load from URL</button>
+                    </form>
+                    <hr>
+                    <p><button v-on:click='fromBase64(); modal = false;'>Base64 Demo</button></p>
+                </div>
+            </div>
         </div>
 
-        <p><div id=piano></div></p>
+        <div class="piano-wrap"><div id=piano></div></div>
 
+        <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/jzz"></script>
+        <script src="https://jazz-soft.net//script/MIDI.js"></script>
+        <script src="https://jazz-soft.net//script/JZZ.synth.MIDIjs.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/jzz-synth-osc"></script>
+        <script src="https://jazz-soft.net/script/JZZ.synth.Tiny.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/jzz-input-kbd"></script>
+        <script src="https://cdn.jsdelivr.net/npm/jzz-midi-smf"></script>
         <script src="index.js"></script>
     </body>
 </html>
