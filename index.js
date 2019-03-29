@@ -509,19 +509,9 @@ let tonnetzPlan = {
                     this.addToTrajectory([midiEvent.getNote()]);
                 }else if(midiEvent.isNoteOff()){
                     this.removeActive([midiEvent.getNote()]);
-                    
                 }
             }
-            if(record.recording){
-                if(midiEvent.isNoteOn()){
-                    record.SMF[0].add(new Date().getTime()-record.startTime,JZZ.MIDI.noteOn(0,midiEvent.getNote(),midiEvent[2]))
-                }else if(midiEvent.isNoteOff()){
-                    record.SMF[0].add(new Date().getTime()-record.startTime,JZZ.MIDI.noteOff(0,midiEvent.getNote()));
-                }else{
-                    record.SMF[0].add(new Date().getTime()-record.startTime,midiEvent);
                 }
-            }
-        }
     },
     mounted(){
         //TODO: Override for events generated from within the Tonnetz (position is known)
@@ -911,12 +901,21 @@ var proto = new Vue({
             }
             return true;
         },
-        midiHandler: function (event){
-            noteIndex = (event.getNote()+3) %12
-            if(event.isNoteOn()){
+        midiHandler: function (midiEvent){
+            noteIndex = (midiEvent.getNote()+3) %12
+            if(midiEvent.isNoteOn()){
                 this.notes[noteIndex].count++;
-            }else if(event.isNoteOff()){
+            }else if(midiEvent.isNoteOff()){
                 this.notes[noteIndex].count--;
+            }
+            if(record.recording){
+                if(midiEvent.isNoteOn()){
+                    record.SMF[0].add(new Date().getTime()-record.startTime,JZZ.MIDI.noteOn(midiEvent.getChannel(),midiEvent.getNote(),midiEvent[2]))
+                }else if(midiEvent.isNoteOff()){
+                    record.SMF[0].add(new Date().getTime()-record.startTime,JZZ.MIDI.noteOff(midiEvent.getChannel(),midiEvent.getNote()));
+                }else if(midiEvent.ff!==0x51){ // Ignore tempo events which mess with timing
+                    record.SMF[0].add(new Date().getTime()-record.startTime,midiEvent);
+                }
             }
         },
         loaded: function(){
