@@ -32,6 +32,23 @@ function gcd(a, b) {
     return gcd(b, a % b);
 };
 
+// Basic memoizer
+// Warning: do not mutate returned objects as it will mutate the cache
+function memo(func){
+    var cache = {};
+      return function(){
+        var key = JSON.stringify(arguments);
+        if (cache[key]){
+          //console.log(cache)
+          return cache[key];
+        }
+        else{
+          val = func.apply(null, arguments);
+          cache[key] = val;
+          return val; 
+        }
+    }
+  }
 
 //Used for validation
 function isSubset(a, b){
@@ -381,6 +398,13 @@ let tonnetzPlan = {
         },
         trichordStateList: function(){
             return this.trichordList.map(nodes => ({nodes,status:this.chordStatus(nodes)}) );
+        },
+        memoNode2Notes: function(){ // Memoize so the returned objects evaluate as equal and no change is detected
+            this.intervals && this.notes // Force dependency so the memo's cache is emptied
+            return memo(this.node2Notes);
+        },
+        memoShape: function(){ // Memoize so the returned objects evaluate as equal and no change is detected
+            return memo(this.shape);
         }
     },
     watch:{
@@ -511,7 +535,7 @@ let tonnetzPlan = {
                     this.removeActive([midiEvent.getNote()]);
                 }
             }
-                }
+        }
     },
     mounted(){
         //TODO: Override for events generated from within the Tonnetz (position is known)
@@ -526,9 +550,9 @@ let tonnetzPlan = {
             v-for="n in trichordStateList" v-bind:key="genKey(n.nodes)"
             :pitches="nodesToPitches(n.nodes)">
                 <trichord 
-                v-bind:notes="node2Notes(n.nodes)"
+                v-bind:notes="memoNode2Notes(n.nodes)"
                 v-bind:nodes="n.nodes"
-                :shape="shape(n.nodes)"
+                :shape="memoShape(n.nodes)"
                 :forceState="n.status"
                 />
             </clickToPlayWrapper>
@@ -537,15 +561,15 @@ let tonnetzPlan = {
             v-for="n in dichordStateList" v-bind:key="genKey(n.nodes)"
             :pitches="nodesToPitches(n.nodes)">
                 <dichord 
-                v-bind:shape="shape(n.nodes)"
-                v-bind:notes="node2Notes(n.nodes)"
+                v-bind:shape="memoShape(n.nodes)"
+                v-bind:notes="memoNode2Notes(n.nodes)"
                 :forceState="n.status"/>
             </clickToPlayWrapper>
 
             <clickToPlayWrapper :transform="position(n.node)"
             v-for="n in nodeStateList" v-bind:key="genKey([n.node])"
             :pitches="nodesToPitches([n.node])">
-                <note v-bind:notes="node2Notes([n.node])"
+                <note v-bind:notes="memoNode2Notes([n.node])"
                 v-bind:nodes="[n.node]"
                 :forceState="n.status"/>
             </clickToPlayWrapper>
@@ -696,7 +720,7 @@ let chickenWire = {
             <clickToPlayWrapper :transform="position(n[0])"
             v-for="n in dichordList" v-bind:key="genKey(n)"
             :pitches="nodesToPitches(n)">
-                <dichord
+                <dichord 
                 v-bind:notes="node2Notes(n)"
                 v-bind:shape="shape(n)"/>
             </clickToPlayWrapper>
