@@ -725,24 +725,11 @@ let chickenWire = {
 // Note component : a clickable circle with the note name
 let noteClock = {
     mixins: [activableMixin],
-    props: ['notes','nodes','id','center','radius','intervals'],
-    computed: {
-        theta: function(){
-            return -2*Math.PI*(mod(this.intervals*(this.nodes[0]-3),12)/12 - 1/4);
-        },
-        x: function(){
-            return this.center.x+this.radius*Math.cos(this.theta);
-        },
-        y : function (){
-            return this.center.y-this.radius*Math.sin(this.theta);
-        }
-    },
     template: `
-        <g v-bind:id="id">
-            <circle v-bind:class="{activeNode:isActive}"
-                v-bind:cx="x" v-bind:cy="y" r="12" v-bind:data-key="notes[0].text">
+        <g>
+            <circle v-bind:class="{activeNode:isActive}" r="12" v-bind:data-key="notes[0].text">
             </circle> 
-            <text v-bind:x="x" v-bind:y="y">
+            <text>
                 {{ notes[0].text }}
             </text>
         </g>
@@ -779,11 +766,8 @@ let clockOctave = {
             var result = [];
             for(i of range(0,12)){
                 if(this.notes[mod(i*this.intervals,12)].count>0){
-                    var theta = -2*Math.PI*(mod((i-3*this.intervals),12)/12 - 1/4);
-                    result.push({
-                        x:this.center.x+this.radius*Math.cos(theta),
-                        y:this.center.y-this.radius*Math.sin(theta)
-                    })
+                    let node = mod(i*this.intervals,12);
+                    result.push(this.position(node))
                 }
             }
             return result;
@@ -805,6 +789,16 @@ let clockOctave = {
         nodesToPitches: function(nodes){
             let A3 = 57;
             return nodes.map(node => A3+node);
+        },
+        position(node){
+            let theta = -2*Math.PI*(mod(this.intervals*(node-3),12)/12 - 1/4);
+            return pos = {
+                x: this.center.x+this.radius*Math.cos(theta),
+                y: this.center.y-this.radius*Math.sin(theta)
+            }
+        },
+        posToTransform(pos){
+            return `translate(${pos.x},${pos.y})`
         }
     },
     template: `
@@ -816,13 +810,11 @@ let clockOctave = {
                 v-bind:points="points"/>
             <clickToPlayWrapper v-for="n in [0,1,2,3,4,5,6,7,8,9,10,11]" 
             :pitches="nodesToPitches([n])"
-            v-bind:key="genKey([n])">
+            v-bind:key="genKey([n])"
+            :transform="posToTransform(position(n))" v-once>
                 <note-clock
                 v-bind:notes="node2Notes([n])"
-                v-bind:nodes="[n]"
-                v-bind:center="center"
-                v-bind:radius="radius"
-                v-bind:intervals="intervals"/>
+                />
             </clickToPlayWrapper>
             
         </svg>
