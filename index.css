@@ -1,99 +1,81 @@
-/*Author: Corentin Guichaoua */
+/* Author: Corentin Guichaoua, Philipp Legner */
 
-html, body {
-    margin: 5px;
-    padding: 0;
-}
+html, body { margin: 0; padding: 0; font-family: 'Quicksand'; color: #323248; }
+[v-cloak] { display: none; }
 
-h1 {
-    text-align: center;
-}
+.header { display: flex; }
+.header > * { width: 8%; flex-grow: 1; height: 20px; }
 
-h2 {
-    text-align: center;
-    color: grey;
-}
+h1 { text-align: center; text-transform: uppercase; margin: 12px 0 4px; font-size: 40px; }
+h2 { text-align: center; text-transform: uppercase; color: #aaa; margin: 0 0 20px; }
 
-.column {
-    float: left;
-}
-  
-.left {
-    width: 70%;
-}
+#proto { display: flex; flex-wrap: wrap; justify-content: center; }
+.col-1 { width: 600px; margin: 20px; flex-shrink: 1; }
+.col-2 { width: 200px; margin: 20px; flex-shrink: 1; }
 
-.right {
-    width: 30%;
-}
+button { cursor: pointer; outline: none; font-size: 18px; font-family: inherit;
+    line-height: 1.5em; padding: 0 10px; }
 
-circle {
-    fill : white;
-    stroke: black;
-}
+.button-row { display: flex; flex-wrap: wrap; margin: 0 0 0 1px; }
+.button-row button { width: 72px; border: 1px solid #323248; margin: -1px 0 0 -1px; flex-grow: 1;
+    transition: background .2s, color .2s; }
+.button-row button:hover, .button-row button:focus { background-color: #ccc; }
+.button-row button.activeButton { background-color: #323248; color: #fff; }
 
-line {
-    stroke : black;
-}
+circle { fill: white; stroke: #aaa; }
+line { stroke: #aaa; }
+polygon { stroke: #aaa; fill : white; }
+text { fill: #aaa; font-size: 14px; text-anchor: middle; dominant-baseline: central; }
 
-polygon {
-    fill : white;
-}
+.tonnetz, .clock { display: block; user-select: none; max-width: 100%; height: auto; }
+.tonnetz { border: 1px solid #323248; border-radius: 6px 6px 0 0; box-sizing: border-box; }
+.clock { stroke-width: 2px; margin-bottom: 10px;  }
+.clock text { font-weight: 500; }
 
-text {
-    text-anchor: middle;
-    dominant-baseline: central;
-}
+.activeDichord, .activeTrichord { stroke: #323248; stroke-width: 2; fill: #ccc; }
+.activeNode + text { fill: white; }
+.activeTrichord + text { fill: #323248; }
+.clockPolygon { fill: #ccc; stroke: #323248; stroke-width: 3; }
 
-.activeButton {
-    background-color : green;
-    color : white;
-}
+.visitedNode { fill: lightyellow; }
+.visitedDichord { stroke-width : 2; }
+.visitedTrichord { fill : lightgreen; }
 
-.tonnetz {
-    user-select: none;
-    -moz-user-select: none;
-    -khtml-user-select: none;
-    -webkit-user-select: none;
-    -o-user-select: none;
-}
+.key-selector { display: flex; flex-wrap: wrap; justify-content: center; }
+.key-selector button { background: white; width: 28px; height: 28px; border: 2px solid #aaa;
+    color: #aaa; padding: 0; margin: 2px; line-height: 25px; font-size: 14px;
+    border-radius: 20px; font-weight: 500; }
+.key-selector .activeNode { color: white; }
 
-.clock{
-    user-select: none;
-    -moz-user-select: none;
-    -khtml-user-select: none;
-    -webkit-user-select: none;
-    -o-user-select: none;
-}
+.activeNode[data-key="C"]  { fill: #b30469; stroke: #b30469; background: #b30469; border-color: #b30469; }
+.activeNode[data-key="Db"] { fill: #822b9b; stroke: #822b9b; background: #822b9b; border-color: #822b9b; }
+.activeNode[data-key="D"]  { fill: #5053cd; stroke: #5053cd; background: #5053cd; border-color: #5053cd; }
+.activeNode[data-key="Eb"] { fill: #1f7aff; stroke: #1f7aff; background: #1f7aff; border-color: #1f7aff; }
+.activeNode[data-key="E"]  { fill: #258dab; stroke: #258dab; background: #258dab; border-color: #258dab; }
+.activeNode[data-key="F"]  { fill: #2ba058; stroke: #2ba058; background: #2ba058; border-color: #2ba058; }
+.activeNode[data-key="Gb"] { fill: #31b304; stroke: #31b304; background: #31b304; border-color: #31b304; }
+.activeNode[data-key="G"]  { fill: #76a90d; stroke: #76a90d; background: #76a90d; border-color: #76a90d; }
+.activeNode[data-key="Ab"] { fill: #e6bd00; stroke: #e6bd00; background: #e6bd00; border-color: #e6bd00; }
+.activeNode[data-key="A"]  { fill: #ff941f; stroke: #ff941f; background: #ff941f; border-color: #ff941f; }
+.activeNode[data-key="Bb"] { fill: #e66438; stroke: #e66438; background: #e66438; border-color: #e66438; }
+.activeNode[data-key="B"]  { fill: #cc3450; stroke: #cc3450; background: #cc3450; border-color: #cc3450; }
 
-.active {
-    background-color : red;
-  }
+.record { width: 100%; margin: 12px 20px 32px; text-align: center; }
+.record button { border: none; background: #ddd; border-radius: 4px; line-height: 32px;
+    padding: 0 16px; margin: 4px; font-size: 16px; transition: background .2s; }
+.record button:hover, .record button:focus { background: #bbb; }
+.record button[disabled] { display: none; } /*  Don't buttons when disabled. */
 
-.activeNode {
-    fill : yellow;
-}
-.visitedNode {
-    fill : lightyellow;
-}
+.modal-background { position: fixed; top: 0; left: 0; bottom: 0; right: 0;
+    background: rgba(0,0,0,0.6); z-index: 1; }
+.modal { position: fixed; z-index: 1; background: white; border-radius: 16px; font-size: 18px;
+    width: 480px; left: 50%; top: 50%; transform: translate(-50%, -50%); max-width: calc(100% - 40px);
+    padding: 10px 20px; }
+.modal p, .modal form { margin: .8em 0; }
+.modal hr { border: 0; border-bottom: 1px solid #ccc; }
+.modal input { max-width: 100%; box-sizing: border-box; font-family: inherit; text-align: center;
+    font-size: 16px; }
 
-.activeDichord {
-    /*stroke : yellow;*/
-    stroke-width : 3;
-}
-
-.visitedDichord {
-    stroke-width : 2;
-}
-
-.activeTrichord {
-    fill : green;
-} 
-
-.visitedTrichord {
-    fill : lightgreen;
-}
-
-.clockPolygon{
-    fill : blue;
-    stroke: black;
-}
+.piano-wrap { position: relative; height: 151px; overflow: hidden; }
+#piano { position: absolute; left: 50%; margin-left: -740px; }
+#piano .inner { text-align: center; display: block; font-size: 14px; margin-top: 4px; }
