@@ -247,7 +247,12 @@ let dragZoomSvg = {
             // Bound the multiplier to acceptable values
             multiplier = bound(multiplier,this.scaleBounds.mini/this.scale,
                                           this.scaleBounds.maxi/this.scale);
-            var pointer = {x:wheelEvent.offsetX,y:wheelEvent.offsetY};
+            
+            //On Firefox, offset is relative to the DOM element from which the event is fired,
+            //not that in which it is handled, so this doesn't work everywhere
+            //var pointer = {x:wheelEvent.offsetX,y:wheelEvent.offsetY};
+            let pointer = {x: wheelEvent.clientX - this.$el.getBoundingClientRect().left,
+                           y: wheelEvent.clientY - this.$el.getBoundingClientRect().top};
 
             //There is probably a better way to find it
             var pointerSvg = ({x:pointer.x/this.scale-this.tx,
