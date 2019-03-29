@@ -1021,6 +1021,7 @@ var proto = new Vue({
         },
         //Simple version operating on pitches alone
         rotateTrajectory : function (SMFTrack) {
+            //TODO: ignore drums track
             let symmetryCenter = undefined;
             for (SME of SMFTrack){
                 let note = SME.getNote();
@@ -1028,7 +1029,13 @@ var proto = new Vue({
                     if (symmetryCenter === undefined){
                         symmetryCenter = note;
                     }else{
-                        note = 2*symmetryCenter - note
+                        noteIntervalClass = mod(2*(symmetryCenter - note),12)
+                        // If the interval is a fifth or more, take the descending interval instead
+                        if(noteIntervalClass > 6){  
+                            note += noteIntervalClass-12
+                        }else{
+                            note += noteIntervalClass
+                        }
                     }
                     SME.setNote(note);
                 }
