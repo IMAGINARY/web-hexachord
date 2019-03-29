@@ -723,7 +723,7 @@ let chickenWire = {
 }
 
 // Note component : a clickable circle with the note name
-Vue.component('note-clock',{
+let noteClock = {
     mixins: [activableMixin],
     props: ['notes','nodes','id','center','radius','intervals'],
     computed: {
@@ -747,10 +747,14 @@ Vue.component('note-clock',{
             </text>
         </g>
         `
-})
+}
 
 //The circle representation
-Vue.component('clock-octave',{
+let clockOctave = {
+    components:{
+        clickToPlayWrapper,
+        noteClock
+    },
     props: {
         height: Number,
         width: Number,
@@ -760,7 +764,6 @@ Vue.component('clock-octave',{
             default: 1
         }
     },
-    components: {clickToPlayWrapper},
     computed: {
         center: function(){
             return {y:this.height/2,x:this.width/2}
@@ -824,14 +827,13 @@ Vue.component('clock-octave',{
             
         </svg>
     `
-})
-
+}
 
 
 // The App's main object, handling global concerns
 var proto = new Vue({
     el: '#proto',
-    components: {dragZoomSvg,tonnetzPlan,chickenWire},
+    components: {dragZoomSvg,tonnetzPlan,chickenWire,clockOctave},
     data: {
         tonnetze: [
             [1,1,10],
