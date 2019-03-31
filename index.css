@@ -16,11 +16,16 @@ h2 { text-align: center; text-transform: uppercase; color: #aaa; margin: 0 0 20p
 button { cursor: pointer; outline: none; font-size: 18px; font-family: inherit;
     line-height: 1.5em; padding: 0 10px; }
 
-.button-row { display: flex; flex-wrap: wrap; margin: 0 0 0 1px; }
-.button-row button { width: 72px; border: 1px solid #323248; margin: -1px 0 0 -1px; flex-grow: 1;
+.button-row { display: flex; margin: 0 0 0 1px; }
+.options { flex-grow: 1; display: flex; flex-wrap: wrap; }
+.button-row button { width: 80px; border: 1px solid #323248; margin: -1px 0 0 -1px; flex-grow: 1;
     transition: background .2s, color .2s; }
-.button-row button:hover, .button-row button:focus { background-color: #ccc; }
-.button-row button.activeButton { background-color: #323248; color: #fff; }
+.button-row button:hover { background-color: #ccc; }
+.button-row button.active { background-color: #323248; color: #fff; }
+.options + button { flex-shrink: 0; border-bottom-right-radius: 6px; width: 100px; border-left: 0; }
+.button-row button:nth-child(7) { border-bottom-left-radius: 6px; }
+
+.warning { text-align: center; color: #aaa; font-style: italic; margin: 10px 0 0; }
 
 circle { fill: white; stroke: #aaa; }
 line { stroke: #aaa; }
