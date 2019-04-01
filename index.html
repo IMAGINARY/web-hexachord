@@ -40,9 +40,12 @@
                     </template>
                 </drag-zoom-svg>
                 <div class="button-row">
-                    <button v-for="tonnetz in tonnetze" v-on:click="(intervals=tonnetz) ^ (type='tonnetz')" v-bind:class="{activeButton:arrayEquals(tonnetz,intervals) && type=='tonnetz'}">{{ tonnetz.join(', ') }}</button>
-                    <button v-for="tonnetz in tonnetze" v-on:click="(intervals=tonnetz) ^ (type='chicken')" v-bind:class="{activeButton:arrayEquals(tonnetz,intervals) && type=='chicken'}">{{ tonnetz.join(', ') }}</button>
+                	<div class="options">
+	                    <button v-for="tonnetz in tonnetze" v-on:click="intervals=tonnetz" v-bind:class="{active:arrayEquals(tonnetz,intervals)}">{{ tonnetz.join(', ') }}</button>
+	                </div>
+                	<button v-on:click="type=(type === 'tonnetz' ? 'chicken' : 'tonnetz')" v-bind:class="{active: type=='chicken'}">Inverted</button>
                 </div>
+                <p class="warning" v-show="intervals.join('') === '228' || intervals.join('') === '246' || intervals.join('') === '369' || intervals.join('') === '444'">This Tonnetz is non-connected and doesn’t contain every note.</p>
             </div>
 
             <div class="col-2" v-cloak>
