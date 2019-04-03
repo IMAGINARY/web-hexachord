@@ -1045,6 +1045,7 @@ var proto = new Vue({
             }
             this.player = record.SMF.player();
             this.player.connect(piano);
+            this.resetNotes();
             this.player.play();
             btn.disabled = false;
         },
