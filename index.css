@@ -22,7 +22,7 @@ button { cursor: pointer; outline: none; font-size: 18px; font-family: inherit;
     transition: background .2s, color .2s; }
 .button-row button:hover { background-color: #ccc; }
 .button-row button.active { background-color: #323248; color: #fff; }
-.options + button { flex-shrink: 0; border-bottom-right-radius: 6px; width: 100px; border-left: 0; }
+.options + button { flex-shrink: 0; border-bottom-right-radius: 6px; width: 100px;}
 .button-row button:nth-child(7) { border-bottom-left-radius: 6px; }
 
 .warning { text-align: center; color: #aaa; font-style: italic; margin: 10px 0 0; }
@@ -32,6 +32,7 @@ line { stroke: #aaa; }
 polygon { stroke: #aaa; fill : white; }
 text { fill: #aaa; font-size: 14px; text-anchor: middle; dominant-baseline: central; }
 
+/*FIXME: Texts in nodes are still selectable on Firefox */
 .tonnetz, .clock { display: block; user-select: none; max-width: 100%; height: auto; }
 .tonnetz { border: 1px solid #323248; border-radius: 6px 6px 0 0; box-sizing: border-box; }
 .clock { stroke-width: 2px; margin-bottom: 10px;  }
