@@ -524,10 +524,10 @@ let tonnetzPlan = {
                     let node = this.active[firstMatch];
                     if(firstMatch !== -1){
                         this.active.splice(firstMatch,1);
+                        this.trajectory.push(node)
                     }else{
                         console.log(`Couldn't remove pitch ${pitch} from active nodes`);
                     }
-                    this.trajectory.push(node)
                 }
             }
         },
