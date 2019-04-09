@@ -57,18 +57,18 @@ function isSubset(a, b){
 
 var piano = JZZ.input.Kbd({at:'piano', from:'C3', to:'B7', onCreate:function() {
     this.getBlackKeys().setStyle({color:'#fff'});
-    this.getKey('C5').setInnerHTML('<span class=inner>W</span>');
-    this.getKey('C#5').setInnerHTML('<span class=inner>S</span>');
-    this.getKey('D5').setInnerHTML('<span class=inner>X</span>');
-    this.getKey('D#5').setInnerHTML('<span class=inner>D</span>');
-    this.getKey('E5').setInnerHTML('<span class=inner>C</span>');
-    this.getKey('F5').setInnerHTML('<span class=inner>V</span>');
-    this.getKey('F#5').setInnerHTML('<span class=inner>G</span>');
-    this.getKey('G5').setInnerHTML('<span class=inner>B</span>');
-    this.getKey('G#5').setInnerHTML('<span class=inner>H</span>');
-    this.getKey('A5').setInnerHTML('<span class=inner>N</span>');
-    this.getKey('A#5').setInnerHTML('<span class=inner>J</span>');
-    this.getKey('B5').setInnerHTML('<span class=inner>M</span>');
+    // this.getKey('C5').setInnerHTML('<span class=inner>W</span>');
+    // this.getKey('C#5').setInnerHTML('<span class=inner>S</span>');
+    // this.getKey('D5').setInnerHTML('<span class=inner>X</span>');
+    // this.getKey('D#5').setInnerHTML('<span class=inner>D</span>');
+    // this.getKey('E5').setInnerHTML('<span class=inner>C</span>');
+    // this.getKey('F5').setInnerHTML('<span class=inner>V</span>');
+    // this.getKey('F#5').setInnerHTML('<span class=inner>G</span>');
+    // this.getKey('G5').setInnerHTML('<span class=inner>B</span>');
+    // this.getKey('G#5').setInnerHTML('<span class=inner>H</span>');
+    // this.getKey('A5').setInnerHTML('<span class=inner>N</span>');
+    // this.getKey('A#5').setInnerHTML('<span class=inner>J</span>');
+    // this.getKey('B5').setInnerHTML('<span class=inner>M</span>');
     }
     });
 
