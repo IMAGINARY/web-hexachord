@@ -63,7 +63,7 @@
                 <button id=replay @click='fromTrajectory()' disabled >Replay</button>
                 <button id=rotate @click='fromTrajectory(true,0)' disabled>Rotate</button>
                 <button id=translate @click='fromTrajectory(false,1)' disabled>Translate</button>
-                <button id=trace @click='traceToggle'>Tracing {{trace ? 'On' : 'Off'}}</button>
+                <!-- <button id=trace @click='traceToggle'>Tracing {{trace ? 'On' : 'Off'}}</button> -->
                 <button id=reset @click='resetNotes'>Reset</button>
                 <div class="modal-background" v-show="modal" v-on:click="modal = false"></div>
                 <div class="modal" v-show="modal">
