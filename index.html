@@ -43,7 +43,7 @@
                 	<div class="options">
 	                    <button v-for="tonnetz in tonnetze" v-on:click="intervals=tonnetz" v-bind:class="{active:arrayEquals(tonnetz,intervals)}">{{ tonnetz.join(', ') }}</button>
 	                </div>
-                	<button v-on:click="type=(type === 'tonnetz' ? 'chicken' : 'tonnetz')" v-bind:class="{active: type=='chicken'}">Inverted</button>
+                	<button v-on:click="type=(type === 'tonnetz' ? 'chicken' : 'tonnetz')" v-bind:class="{active: type=='chicken'}">Dual</button>
                 </div>
                 <p class="warning" v-show="intervals.join('') === '228' || intervals.join('') === '246' || intervals.join('') === '369' || intervals.join('') === '444'">This Tonnetz is non-connected and doesn’t contain every note.</p>
             </div>
@@ -61,7 +61,7 @@
                 <button id=recordButton @click='recordToggle'>{{recordText}}</button>
                 <button id=btn v-on:click='playStop' disabled> {{ buttonText }} </button>
                 <button id=replay @click='fromTrajectory()' disabled >Replay</button>
-                <button id=rotate @click='fromTrajectory(true,0)' disabled>Rotate</button>
+                <button id=rotate @click='fromTrajectory(true,0)' disabled>Rotate 180°</button>
                 <button id=translate @click='fromTrajectory(false,1)' disabled>Translate</button>
                 <!-- <button id=trace @click='traceToggle'>Tracing {{trace ? 'On' : 'Off'}}</button> -->
                 <button id=reset @click='resetNotes'>Reset</button>
