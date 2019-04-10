@@ -51,9 +51,9 @@
             <div class="col-2" v-cloak>
                 <clock-octave v-bind:notes="notes" v-bind:height="200" v-bind:width="200" v-bind:intervals="1"></clock-octave>
                 <clock-octave v-bind:notes="notes" v-bind:height="200" v-bind:width="200" v-bind:intervals="7"></clock-octave>
-                <div class="key-selector">
+                <!-- <div class="key-selector">
                     <button v-bind:data-key="note.text" v-for="note in notes" v-on:click="note.count=1-note.count" v-bind:class="{activeNode: note.count>0}">{{ note.text }}</button>
-                </div>
+                </div> -->
             </div>
 
             <div class="record" v-cloak>
