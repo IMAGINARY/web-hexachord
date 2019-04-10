@@ -299,6 +299,51 @@ let dragZoomSvg = {
     `
 }
 
+// Slotted component that wraps the svg element
+let staticViewSvg = {
+    props: {
+        height: Number,
+        width: Number,
+        tx : {
+            type: Number,
+            default: 0
+        },
+        ty : {
+            type: Number,
+            default: 0
+        },
+        scale: {
+            type: Number,
+            default: 2
+        },
+    },
+    computed: {
+        transform: function(){
+            return `scale(${this.scale}) translate(${this.tx} ${this.ty})`
+        },
+        viewbox: function(){
+            return `0 0 ${this.width} ${this.height}`
+        },
+        bounds: function(){
+            return{
+                xmin:-this.tx,
+                ymin:-this.ty,
+                xmax:-this.tx+this.width /this.scale,
+                ymax:-this.ty+this.height/this.scale,
+            }
+        }
+    },
+    template: `
+        <svg id="svg" class="tonnetz" 
+        v-bind:width="width" v-bind:height="height" 
+        v-bind:viewBox="viewbox" >
+            <g ref="trans" v-bind:transform="transform">
+                <slot :bounds="bounds"/>
+            </g>
+        </svg>
+    `
+}
+
 // The Tonnetz component : A large component that contains the drawing of the Tonnetz
 let tonnetzLike = {
     props: {
@@ -844,7 +889,7 @@ let clockOctave = {
 // The App's main object, handling global concerns
 var proto = new Vue({
     el: '#proto',
-    components: {dragZoomSvg,tonnetzPlan,chickenWire,clockOctave},
+    components: {dragZoomSvg,tonnetzPlan,chickenWire,clockOctave,staticViewSvg},
     data: {
         tonnetze: [
             [1,1,10],

@@ -29,7 +29,14 @@
 
         <div id="proto">
             <div class="col-1" v-cloak>
-                <drag-zoom-svg v-if="type=='tonnetz'" v-bind:height="400" v-bind:width="600" :scale-bounds="{mini:1,maxi:5}">
+                <static-view-svg v-bind:height="400" v-bind:width="600">
+                    <template v-slot="slotProps">
+                        <tonnetz-plan v-if="type=='tonnetz'" v-bind:notes="notes" v-bind:intervals="intervals" :bounds="slotProps.bounds" :trace="trace"></tonnetz-plan>
+                        <chicken-wire v-else v-bind:notes="notes" :bounds="slotProps.bounds" v-bind:intervals="intervals"></chicken-wire>
+                    </template>
+                </static-view-svg>
+
+                <!-- <drag-zoom-svg v-if="type=='tonnetz'" v-bind:height="400" v-bind:width="600" :scale-bounds="{mini:1,maxi:5}">
                     <template v-slot="slotProps">
                         <tonnetz-plan v-bind:notes="notes" v-bind:intervals="intervals" :bounds="slotProps.bounds" :trace="trace"></tonnetz-plan>
                     </template>
@@ -38,7 +45,7 @@
                     <template v-slot="slotProps">
                         <chicken-wire v-bind:notes="notes" :bounds="slotProps.bounds" v-bind:intervals="intervals"></chickenwire>
                     </template>
-                </drag-zoom-svg>
+                </drag-zoom-svg> -->
                 <div class="button-row">
                 	<div class="options">
 	                    <button v-for="tonnetz in tonnetze" v-on:click="intervals=tonnetz" v-bind:class="{active:arrayEquals(tonnetz,intervals)}">{{ tonnetz.join(', ') }}</button>
