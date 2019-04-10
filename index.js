@@ -1081,12 +1081,15 @@ var proto = new Vue({
             this.load(JZZ.lib.fromBase64(data), 'Base64 data');
         },
         fromTrajectory : function (rotate = false, translate = 0) {
-            
             if(rotate){
                 this.rotateTrajectory(record.SMF[0]);
             }
             if(translate){
                 this.translateTrajectory(record.SMF[0],translate);
+            }
+            //Stop playback to avoid overlapping
+            if(this.player.playing){
+                this.player.stop();
             }
             this.player = record.SMF.player();
             this.player.connect(piano);
