@@ -344,90 +344,7 @@ let staticViewSvg = {
     `
 }
 
-// The Tonnetz component : A large component that contains the drawing of the Tonnetz
-let tonnetzLike = {
-    props: {
-        notes: Array,
-        intervals: {
-            type: Array,
-            default: () => [3,4,5]
-        },
-        bounds: {
-            type: Object
-        }
-    },
-    computed: {
-        nodeList: function (){
-            var nodes = [];
-            var xmin = Math.floor(this.bounds.xmin/(baseSize*xstep))
-            var xmax = Math.ceil(this.bounds.xmax/(baseSize*xstep))
-            for(xi of range(xmin,xmax+1)){
-                ymin = Math.floor(this.bounds.ymin/(baseSize)-xi/2)
-                ymax = Math.ceil(this.bounds.ymax/(baseSize)-xi/2)
-                for(yi of range(ymin,ymax+1)){
-                    let node = {x:xi,y:yi};
-                    nodes.push(node)
-                }
-            }
-            return nodes;
-        },
-        dichordList: function (){
-            var nodes = [];
-            //For each root
-            for(node of this.nodeList){
-                nodes.push([{x:node.x,y:node.y},{x:node.x+1,y:node.y  }]);
-                nodes.push([{x:node.x,y:node.y},{x:node.x  ,y:node.y+1}]);
-                nodes.push([{x:node.x,y:node.y},{x:node.x-1,y:node.y+1}]);
-            }
-            return nodes;
-        },
-        trichordList: function (){
-            var nodes = [];
-            //For each root
-            for(node of this.nodeList){
-                nodes.push([{x:node.x,y:node.y},{x:node.x+1,y:node.y  },{x:node.x,y:node.y+1}]);
-                nodes.push([{x:node.x,y:node.y},{x:node.x-1,y:node.y+1},{x:node.x,y:node.y+1}]);
-            }
-            return nodes;
-        }
-    },
-    methods: {
-        node2Notes: function (nodes){
-            return nodes.map(node => this.notes[mod(-node.x*this.intervals[0]+node.y*this.intervals[2],12)])
-        },
-        nodesToPitches: function(nodes){
-            return nodes.map(nodeIt => 81-nodeIt.x*this.intervals[0]+nodeIt.y*(this.intervals[2]-12));
-        },
-        position: function(node){
-            let {x,y} = logicalToSvg(node)
-            return `translate(${x} ${y})`
-        },
-        shape: function(nodes){
-            return nodes.map(node => ({
-                x:node.x-nodes[0].x,
-                y:node.y-nodes[0].y
-            }));
-        },
-        genKey: function (n){
-            return n.map(function textify(node){return `${node.x},${node.y}`}).join(' ')
-        }
-    }
-};
-
-var record = {
-    startTime:undefined,
-    SMF:undefined,
-    recording:false
-}
-
-let tonnetzPlan = {
-    components: {
-        clickToPlayWrapper,
-        'note': noteTonnetz,
-        'dichord': dichordTonnetz,
-        'trichord': trichordTonnetz
-    },
-    extends: tonnetzLike,
+let traceHandler = {
     props:{
         trace: {
             type: Boolean,
@@ -592,7 +509,94 @@ let tonnetzPlan = {
         piano.connect(this.midiDispatch);
         // midiBus.$on('note-on',this.addToTrajectory);
         // midiBus.$on('note-off',this.removeActive);
+    }
+}
+
+// The Tonnetz component : A large component that contains the drawing of the Tonnetz
+let tonnetzLike = {
+    props: {
+        notes: Array,
+        intervals: {
+            type: Array,
+            default: () => [3,4,5]
+        },
+        bounds: {
+            type: Object
+        }
     },
+    computed: {
+        nodeList: function (){
+            var nodes = [];
+            var xmin = Math.floor(this.bounds.xmin/(baseSize*xstep))
+            var xmax = Math.ceil(this.bounds.xmax/(baseSize*xstep))
+            for(xi of range(xmin,xmax+1)){
+                ymin = Math.floor(this.bounds.ymin/(baseSize)-xi/2)
+                ymax = Math.ceil(this.bounds.ymax/(baseSize)-xi/2)
+                for(yi of range(ymin,ymax+1)){
+                    let node = {x:xi,y:yi};
+                    nodes.push(node)
+                }
+            }
+            return nodes;
+        },
+        dichordList: function (){
+            var nodes = [];
+            //For each root
+            for(node of this.nodeList){
+                nodes.push([{x:node.x,y:node.y},{x:node.x+1,y:node.y  }]);
+                nodes.push([{x:node.x,y:node.y},{x:node.x  ,y:node.y+1}]);
+                nodes.push([{x:node.x,y:node.y},{x:node.x-1,y:node.y+1}]);
+            }
+            return nodes;
+        },
+        trichordList: function (){
+            var nodes = [];
+            //For each root
+            for(node of this.nodeList){
+                nodes.push([{x:node.x,y:node.y},{x:node.x+1,y:node.y  },{x:node.x,y:node.y+1}]);
+                nodes.push([{x:node.x,y:node.y},{x:node.x-1,y:node.y+1},{x:node.x,y:node.y+1}]);
+            }
+            return nodes;
+        }
+    },
+    methods: {
+        node2Notes: function (nodes){
+            return nodes.map(node => this.notes[mod(-node.x*this.intervals[0]+node.y*this.intervals[2],12)])
+        },
+        nodesToPitches: function(nodes){
+            return nodes.map(nodeIt => 81-nodeIt.x*this.intervals[0]+nodeIt.y*(this.intervals[2]-12));
+        },
+        position: function(node){
+            let {x,y} = logicalToSvg(node)
+            return `translate(${x} ${y})`
+        },
+        shape: function(nodes){
+            return nodes.map(node => ({
+                x:node.x-nodes[0].x,
+                y:node.y-nodes[0].y
+            }));
+        },
+        genKey: function (n){
+            return n.map(function textify(node){return `${node.x},${node.y}`}).join(' ')
+        }
+    }
+};
+
+var record = {
+    startTime:undefined,
+    SMF:undefined,
+    recording:false
+}
+
+let tonnetzPlan = {
+    components: {
+        clickToPlayWrapper,
+        'note': noteTonnetz,
+        'dichord': dichordTonnetz,
+        'trichord': trichordTonnetz
+    },
+    extends: tonnetzLike,
+    mixins: [traceHandler],
     //TODO: Get the template into the base component (need to control the layering of elements)
     template: `
         <g>
@@ -658,7 +662,7 @@ let trichordChicken = {
     },
     template: `
         <g v-bind:id="id">
-            <circle v-bind:class="{activeTrichord:isActive}"
+            <circle v-bind:class="{activeTrichord:isActive, visitedTrichord:semiActive}"
                 v-bind:cx="x" v-bind:cy="y" r="10">
             </circle> 
             <text v-bind:x="x" v-bind:y="y" font-size="12">
@@ -705,7 +709,7 @@ let dichordChicken = {
     },
     template: `
     <g>
-        <line v-bind:class="{activeDichord:isActive}" 
+        <line v-bind:class="{activeDichord:isActive, visitedDichord:semiActive}" 
             v-bind="coords">
         </line> 
         <circle v-bind:class="{activeDichord:isActive}"
@@ -742,7 +746,7 @@ let noteChicken = {
         }
     },
     template: `
-        <polygon v-bind:class="{activeNode:isActive}" 
+        <polygon v-bind:class="{activeNode:isActive, visitedNode:semiActive}" 
             v-bind:points="points" v-bind:data-key="notes[0].text"/>
         `
 }
@@ -756,31 +760,35 @@ let chickenWire = {
         'trichord': trichordChicken
     },
     extends: tonnetzLike,
+    mixins: [traceHandler],
     template: `
         <g>
-            <clickToPlayWrapper :transform="position(n)"
-            v-for="n in nodeList" v-bind:key="genKey([n])"
-            :pitches="nodesToPitches([n])">
+            <clickToPlayWrapper :transform="position(n.node)"
+            v-for="n in nodeStateList" v-bind:key="genKey([n.node])"
+            :pitches="nodesToPitches([n.node])">
                 <note
-                v-bind:notes="node2Notes([n])"
-                v-bind:nodes="[n]"
+                v-bind:notes="node2Notes([n.node])"
+                v-bind:nodes="[n.node]"
+                :forceState="n.status"
                 />
             </clickToPlayWrapper>
 
-            <clickToPlayWrapper :transform="position(n[0])"
-            v-for="n in dichordList" v-bind:key="genKey(n)"
-            :pitches="nodesToPitches(n)">
+            <clickToPlayWrapper :transform="position(n.nodes[0])"
+            v-for="n in dichordStateList" v-bind:key="genKey(n.nodes)"
+            :pitches="nodesToPitches(n.nodes)">
                 <dichord 
-                v-bind:notes="node2Notes(n)"
-                v-bind:shape="shape(n)"/>
+                v-bind:notes="node2Notes(n.nodes)"
+                v-bind:shape="shape(n.nodes)"
+                :forceState="n.status"/>
             </clickToPlayWrapper>
             
-            <clickToPlayWrapper :transform="position(n[0])"
-            v-for="n in trichordList" v-bind:key="genKey(n)"
-            :pitches="nodesToPitches(n)">
+            <clickToPlayWrapper :transform="position(n.nodes[0])"
+            v-for="n in trichordStateList" v-bind:key="genKey(n.nodes)"
+            :pitches="nodesToPitches(n.nodes)">
                 <trichord
-                v-bind:notes="node2Notes(n)"
-                v-bind:shape="shape(n)"/>
+                v-bind:notes="node2Notes(n.nodes)"
+                v-bind:shape="shape(n.nodes)"
+                :forceState="n.status"/>
             </clickToPlayWrapper>
         </g>
     `

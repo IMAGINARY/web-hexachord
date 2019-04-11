@@ -32,7 +32,7 @@
                 <static-view-svg v-bind:height="400" v-bind:width="600">
                     <template v-slot="slotProps">
                         <tonnetz-plan v-if="type=='tonnetz'" v-bind:notes="notes" v-bind:intervals="intervals" :bounds="slotProps.bounds" :trace="trace"></tonnetz-plan>
-                        <chicken-wire v-else v-bind:notes="notes" :bounds="slotProps.bounds" v-bind:intervals="intervals"></chicken-wire>
+                        <chicken-wire v-else v-bind:notes="notes" :bounds="slotProps.bounds" v-bind:intervals="intervals" :trace="trace"></chicken-wire>
                     </template>
                 </static-view-svg>
 
