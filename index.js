@@ -945,6 +945,7 @@ var proto = new Vue({
         
         //TODO: Ask which Midi controller to use instead of blindly picking the first
         keyboard: JZZ().openMidiIn(),
+        SMF: undefined,
         player: JZZ.MIDI.SMF().player(),
         trace: false,
         recording: false,
@@ -953,7 +954,7 @@ var proto = new Vue({
     computed: {
         buttonText: function(){
             if (this.player.playing) {
-                return 'Stop'
+                return 'Pause'
             }else{
                 return 'Play'
             }
@@ -1004,18 +1005,24 @@ var proto = new Vue({
             this.loadlog = '';
         },
         clear: function() {
-            if (this.player)
-                this.player.stop();
+            this.stop()
             this.loadlog = 'please wait...';
-            btn.disabled = true;
         },
-        playStop: function() {
+        playPause: function() {
             if (this.player.playing) {
-                this.player.stop();
-            } else {
+                this.player.pause();
+            } else if(this.player.paused){
+                this.player.resume();
+            }else{
                 this.resetNotes();
                 this.player.play();
             }
+        },
+        stop: function(){
+            if(this.player){
+                this.player.stop();
+            }
+            setTimeout(this.resetNotes,10); // Reset in a timer in case some timers could not be cleared
         },
         resetNotes: function(){
             for (note of this.notes){
@@ -1028,11 +1035,11 @@ var proto = new Vue({
         //TODO: encapsulate this in a loader component
         load: function(data, name) {
             try {
-                this.player = JZZ.MIDI.SMF(data).player();
+                this.SMF = JZZ.MIDI.SMF(data);
+                this.player = this.SMF.player();
                 this.player.connect(piano);
                 this.player.play();
                 this.loadlog = name;
-                btn.disabled = false;
             } catch (e) {
                 console.log(e);
                 this.loadlog = e;
@@ -1088,50 +1095,67 @@ var proto = new Vue({
             this.clear();
             this.load(JZZ.lib.fromBase64(data), 'Base64 data');
         },
-        fromTrajectory : function (rotate = false, translate = 0) {
-            if(rotate){
-                this.rotateTrajectory(record.SMF[0]);
-            }
-            if(translate){
-                this.translateTrajectory(record.SMF[0],translate);
-            }
+        fromTrajectory : function () {
             //Stop playback to avoid overlapping
             if(this.player.playing){
-                this.player.stop();
+                this.stop();
             }
+            this.SMF=record.SMF;
             this.player = record.SMF.player();
             this.player.connect(piano);
             this.resetNotes();
+        },
+        //TODO: Fix 0.5 s slowdown
+        rotate: function(){
+            this.stop()
+            this.rotateTrajectory(this.SMF);
+            // TODO: Does the player really need to be reassigned ?
+            this.player=this.SMF.player();
+            this.player.connect(piano);
+
             this.player.play();
-            btn.disabled = false;
+        },
+        //TODO: Fix 0.5 s slowdown
+        translate: function(translate=1){
+            this.stop()
+            this.translateTrajectory(this.SMF,translate);
+            // TODO: Does the player really need to be reassigned ?
+            this.player=this.SMF.player();
+            this.player.connect(piano);
+
+            this.player.play();
         },
         //Simple version operating on pitches alone
-        rotateTrajectory : function (SMFTrack) {
-            //TODO: ignore drums track
-            let symmetryCenter = undefined;
-            for (SME of SMFTrack){
-                let note = SME.getNote();
-                if(note !== undefined){
-                    if (symmetryCenter === undefined){
-                        symmetryCenter = note;
-                    }else{
-                        noteIntervalClass = mod(2*(symmetryCenter - note),12)
-                        // If the interval is a fifth or more, take the descending interval instead
-                        if(noteIntervalClass > 6){  
-                            note += noteIntervalClass-12
+        rotateTrajectory : function (SMF) {
+            for (SMFTrack of SMF){
+                //TODO: ignore drums track
+                let symmetryCenter = undefined;
+                for (SME of SMFTrack){
+                    let note = SME.getNote();
+                    if(note !== undefined){
+                        if (symmetryCenter === undefined){
+                            symmetryCenter = note;
                         }else{
-                            note += noteIntervalClass
+                            noteIntervalClass = mod(2*(symmetryCenter - note),12)
+                            // If the interval is a fifth or more, take the descending interval instead
+                            if(noteIntervalClass > 6){  
+                                note += noteIntervalClass-12
+                            }else{
+                                note += noteIntervalClass
+                            }
                         }
+                        SME.setNote(note);
                     }
-                    SME.setNote(note);
                 }
             }
         },
-        translateTrajectory : function (SMFTrack,translate) {
-            for (SME of SMFTrack){
-                let note = SME.getNote();
-                if(note !== undefined){
-                    SME.setNote(note+translate);
+        translateTrajectory : function (SMF,translate) {
+            for (SMFTrack of SMF){
+                for (SME of SMFTrack){
+                    let note = SME.getNote();
+                    if(note !== undefined){
+                        SME.setNote(note+translate);
+                    }
                 }
             }
         },
@@ -1149,16 +1173,12 @@ var proto = new Vue({
         },
         recordToggle: function(){
             if(this.recording){
-                replay.disabled=false;
-                rotate.disabled=false;
-                translate.disabled=false;
                 this.recording = false;
                 record.SMF[0].add(new Date().getTime() - record.startTime,JZZ.MIDI.smfEndOfTrack());
                 record.recording = false;
+                this.stop();
+                this.fromTrajectory();
             }else{
-                replay.disabled=true;
-                rotate.disabled=true;
-                translate.disabled=true;
                 this.recording = true;
                 record.SMF = new JZZ.MIDI.SMF(0,500); // 500 tpb, 120 bpm => 1 tick per millisecond
                 record.SMF.push(new JZZ.MIDI.SMF.MTrk());

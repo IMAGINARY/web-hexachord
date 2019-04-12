@@ -65,13 +65,13 @@
 
             <div class="record" v-cloak>
                 <button id=load v-on:click='modal = true'>Load Midi File</button>
+                <button v-if="SMF" id=btn v-on:click='playPause'> {{ buttonText }} </button>
+                <button v-if="player.playing" id=stop @click="stop">Stop</button>
                 <button id=recordButton @click='recordToggle'>{{recordText}}</button>
-                <button id=btn v-on:click='playStop' disabled> {{ buttonText }} </button>
-                <button id=replay @click='fromTrajectory()' disabled >Replay</button>
-                <button id=rotate @click='fromTrajectory(true,0)' disabled>Rotate 180°</button>
-                <button id=translate @click='fromTrajectory(false,1)' disabled>Translate</button>
+                <button v-if="SMF" id=rotate @click='rotate'>Rotate 180°</button>
+                <button v-if="SMF" id=translate @click='translate(1)'>Translate</button>
                 <!-- <button id=trace @click='traceToggle'>Tracing {{trace ? 'On' : 'Off'}}</button> -->
-                <button id=reset @click='resetNotes'>Reset</button>
+                <!-- <button id=reset @click='resetNotes'>Reset</button> -->
                 <div class="modal-background" v-show="modal" v-on:click="modal = false"></div>
                 <div class="modal" v-show="modal">
                     <p><input type=file id=file size=40 v-on:change='fromFile(); modal=false'></p>
