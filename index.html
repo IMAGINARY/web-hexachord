@@ -74,14 +74,20 @@
                 <!-- <button id=reset @click='resetNotes'>Reset</button> -->
                 <div class="modal-background" v-show="modal" v-on:click="modal = false"></div>
                 <div class="modal" v-show="modal">
-                    <p><input type=file id=file size=40 v-on:change='fromFile(); modal=false'></p>
-                    <hr>
-                    <form v-on:submit.prevent='fromURL(); modal = false; return false;'>
+                    <!-- <p><input type=file id=file size=40 v-on:change='fromFile(); modal=false'></p>
+                    <hr> -->
+                    <template v-for="song in files">
+                        <button @click="fromURL(song.fileName);modal = false;" class="song-select">
+                            {{song.humanName}}
+                        </button>
+                        <br/>
+                    </template>
+                    <!-- <form v-on:submit.prevent='fromURL(); modal = false; return false;'>
                         <input type=text id=url value='https://jazz-soft.net/demo/midi/furelise.mid' size=80>
                         <button type=submit>Load from URL</button>
                     </form>
                     <hr>
-                    <p><button v-on:click='fromBase64(); modal = false;'>Base64 Demo</button></p>
+                    <p><button v-on:click='fromBase64(); modal = false;'>Base64 Demo</button></p> -->
                 </div>
             </div>
         </div>

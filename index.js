@@ -929,6 +929,28 @@ var proto = new Vue({
             {text: 'G',  count:0},
             {text: 'Ab', count:0}
         ],
+        files: [
+            {
+                humanName:"Elton John — ?",
+                fileName:"Midi/001_Elton_John-1.MID"
+            },
+            {
+                humanName:"Keith Jarrett — ?",
+                fileName:"Midi/002_Keith_Jarrett.MID"
+            },
+            {
+                humanName:"J. S. Bach — ?",
+                fileName:"Midi/003_Bach.MID"
+            },
+            {
+                humanName:"The Beatles — Hey Jude",
+                fileName:"Midi/004_Beatles_Hey_Jude.MID"
+            },
+            {
+                humanName:"The Beatles — Hey Jude (Negative Harmony)",
+                fileName:"Midi/005_Beatles_Hey_Jude_NH-1.MID"
+            },
+        ],
         loadlog: "*** MIDI.js is loading soundfont... ***",
         //TODO: Find a way to have nice output on Safari and Firefox
         synth: JZZ.synth.Tiny(),
@@ -1065,9 +1087,9 @@ var proto = new Vue({
             } else
                 this.loadlog = 'File API is not supported in this browser.';
         },
-        fromURL: function () {
+        fromURL: function (url) {
             this.clear();
-            var url = document.getElementById('url').value;
+            //var url = document.getElementById('url').value;
             try {
                 var xhttp = new XMLHttpRequest();
                 xhttp.onreadystatechange = function() {
@@ -1085,7 +1107,7 @@ var proto = new Vue({
                 }
                 ;
                 xhttp.overrideMimeType('text/plain; charset=x-user-defined');
-                xhttp.open('GET', 'proxy.php?url=' + encodeURIComponent(url), true);
+                xhttp.open('GET', encodeURIComponent(url), true);
                 xhttp.send();
             } catch (e) {
                 this.loadlog = 'XMLHttpRequest error';
