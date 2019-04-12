@@ -799,7 +799,7 @@ let noteClock = {
     mixins: [activableMixin],
     template: `
         <g>
-            <circle v-bind:class="{activeNode:isActive}" r="12" v-bind:data-key="notes[0].text">
+            <circle v-bind:class="{activeNode:isActive}" r="24" v-bind:data-key="notes[0].text">
             </circle> 
             <text>
                 {{ notes[0].text }}

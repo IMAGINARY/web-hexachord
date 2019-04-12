@@ -29,7 +29,7 @@
 
         <div id="proto">
             <div class="col-1" v-cloak>
-                <static-view-svg v-bind:height="400" v-bind:width="600">
+                <static-view-svg v-bind:height="600" v-bind:width="1000">
                     <template v-slot="slotProps">
                         <tonnetz-plan v-if="type=='tonnetz'" v-bind:notes="notes" v-bind:intervals="intervals" :bounds="slotProps.bounds" :trace="trace"></tonnetz-plan>
                         <chicken-wire v-else v-bind:notes="notes" :bounds="slotProps.bounds" v-bind:intervals="intervals" :trace="trace"></chicken-wire>
@@ -56,8 +56,8 @@
             </div>
 
             <div class="col-2" v-cloak>
-                <clock-octave v-bind:notes="notes" v-bind:height="200" v-bind:width="200" v-bind:intervals="1"></clock-octave>
-                <clock-octave v-bind:notes="notes" v-bind:height="200" v-bind:width="200" v-bind:intervals="7"></clock-octave>
+                <clock-octave v-bind:notes="notes" v-bind:height="400" v-bind:width="400" v-bind:intervals="1"></clock-octave>
+                <clock-octave v-bind:notes="notes" v-bind:height="400" v-bind:width="400" v-bind:intervals="7"></clock-octave>
                 <!-- <div class="key-selector">
                     <button v-bind:data-key="note.text" v-for="note in notes" v-on:click="note.count=1-note.count" v-bind:class="{activeNode: note.count>0}">{{ note.text }}</button>
                 </div> -->

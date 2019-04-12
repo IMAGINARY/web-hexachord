@@ -10,15 +10,15 @@ h1 { text-align: center; text-transform: uppercase; margin: 12px 0 4px; font-siz
 h2 { text-align: center; text-transform: uppercase; color: #aaa; margin: 0 0 20px; }
 
 #proto { display: flex; flex-wrap: wrap; justify-content: center; }
-.col-1 { width: 600px; margin: 20px; flex-shrink: 1; }
-.col-2 { width: 200px; margin: 20px; flex-shrink: 1; }
+.col-1 { width: 50%; margin: 20px; flex-shrink: 1; }
+.col-2 { width: 15%; margin: 20px; flex-shrink: 1; }
 
 button { cursor: pointer; outline: none; font-size: 18px; font-family: inherit;
     line-height: 1.5em; padding: 0 10px; }
 
 .button-row { display: flex; margin: 0 0 0 1px; }
 .options { flex-grow: 1; display: flex; flex-wrap: wrap; }
-.button-row button { width: 80px; border: 1px solid #323248; margin: -1px 0 0 -1px; flex-grow: 1;
+.button-row button { width: 16%; border: 1px solid #323248; margin: -1px 0 0 -1px; flex-grow: 1;
     transition: background .2s, color .2s; }
 .button-row button:hover { background-color: #ccc; }
 .button-row button.active { background-color: #323248; color: #fff; }
@@ -36,7 +36,7 @@ text { fill: #aaa; font-size: 14px; text-anchor: middle; dominant-baseline: cent
 .tonnetz, .clock { display: block; user-select: none; max-width: 100%; height: auto; }
 .tonnetz { border: 1px solid #323248; border-radius: 6px 6px 0 0; box-sizing: border-box; }
 .clock { stroke-width: 2px; margin-bottom: 10px;  }
-.clock text { font-weight: 500; }
+.clock text { font-weight: 500; font-size: 24px}
 
 .activeDichord, .activeTrichord { stroke: #323248; stroke-width: 2; fill: #ccc; }
 .activeNode + text { fill: white; }
