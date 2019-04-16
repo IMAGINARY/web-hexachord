@@ -89,20 +89,31 @@ let clickToPlayWrapper = {
     }},
     methods:{
         clickOn: function(){
-            midiBus.$emit('note-on',this.pitches);
-            this.clicked=true;
+            if(!this.clicked){
+                midiBus.$emit('note-on',this.pitches);
+                this.clicked=true;
+            }
         },
         clickOff: function(){
             if(this.clicked){
                 midiBus.$emit('note-off',this.pitches);
                 this.clicked=false;
             }
+        },
+        enter: function(event){
+            if(event.pressure!==0){
+                this.clickOn();
+            }
         }
     },
     template:`
         <g @pointerdown="clickOn()" 
-        @pointerup="clickOff()" 
-        @pointerleave="clickOff()">
+        @pointerup="clickOff()"
+        @pointerenter="enter" 
+        @pointerleave="clickOff()"
+        @touchstart.prevent
+        @touchmove.prevent
+        @touchend.prevent>
             <slot/>
         </g>
     `
