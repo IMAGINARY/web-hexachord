@@ -3,6 +3,55 @@
 // Vue.config.devtools = true
 // Vue.config.performance = true
 
+// ============================================================================
+// i18n Strings
+
+const search = location.search.match(/hl=(\w*)/);
+const language = search ? search[1] : 'en';
+
+const strings = {
+  en: {
+    title: 'The Tonnetz',
+    subtitle: 'One key – many representations',
+    dual: 'Dual',
+    reset: 'Reset',
+    load: 'Load Midi File',
+    start: 'Start Recording',
+    stop: 'Stop Recording',
+    play: 'Play',
+    pause: 'Pause',
+    rotate: 'Rotate 180°',
+    translate: 'Translate',
+    connected: 'This Tonnetz is non-connected and doesn’t contain every note.'
+  },
+  de: {
+    title: 'Das Tonnetz',
+    subtitle: 'Ein Klang – viele Darstellungen',
+    dual: 'Dual',
+    reset: 'Zurücksetzen',
+    load: 'Midi Datei Laden',
+    start: 'Aufnehmen',
+    stop: 'Aufnahme Stoppen',
+    play: 'Abspielen',
+    pause: 'Pause',
+    rotate: '180° Rotieren',
+    translate: 'Verschieben',
+    connected: 'Dieses Tonnetz ist nicht verbunden, und enthält nicht alle noten.'
+  }
+}
+
+// ============================================================================
+
+// Reload the screen after 2 minutes of inactivity.
+let timeout = null;
+function restartTimeout() {
+  clearTimeout(timeout);
+  timeout = setTimeout(() => window.location.reload(), 1000 * 120); // 2 mins
+}
+document.addEventListener('touchdown', restartTimeout);
+document.addEventListener('mousemove', restartTimeout);
+
+
 var sqrt2=1.414
 var xstep=Math.sqrt(3)/2
 var baseSize=50
@@ -982,23 +1031,8 @@ var proto = new Vue({
         player: JZZ.MIDI.SMF().player(),
         trace: false,
         recording: false,
-        modal: false
-    },
-    computed: {
-        buttonText: function(){
-            if (this.player.playing) {
-                return 'Pause'
-            }else{
-                return 'Play'
-            }
-        },
-        recordText: function(){
-            if(this.recording){
-                return 'Stop recording';
-            }else{
-                return 'Start recording';
-            }
-        }
+        modal: false,
+        strings: strings[language] || strings.en
     },
     created: function(){
         this.ascii.connect(piano);
@@ -1219,6 +1253,9 @@ var proto = new Vue({
                 record.startTime = new Date().getTime();
                 record.recording = true;
             }
+        },
+        reset() {
+          window.location.reload();
         }
     },
     mounted(){

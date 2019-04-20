@@ -1,5 +1,19 @@
 /* Author: Corentin Guichaoua, Philipp Legner */
 
+@font-face {
+  font-family: 'Quicksand';
+  font-style: normal;
+  font-weight: normal;
+  src: url('fonts/quicksand-book.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'Quicksand';
+  font-style: normal;
+  font-weight: 700;
+  src: url('fonts/quicksand-bold.woff') format('woff');
+}
+
 html, body { margin: 0; padding: 0; font-family: 'Quicksand'; color: #323248; }
 [v-cloak] { display: none; }
 
@@ -9,9 +23,12 @@ html, body { margin: 0; padding: 0; font-family: 'Quicksand'; color: #323248; }
 h1 { text-align: center; text-transform: uppercase; margin: 12px 0 4px; font-size: 40px; }
 h2 { text-align: center; text-transform: uppercase; color: #aaa; margin: 0 0 20px; }
 
-#proto { display: flex; flex-wrap: wrap; justify-content: center; }
-.col-1 { width: 50%; margin: 20px; flex-shrink: 1; }
-.col-2 { width: 15%; margin: 20px; flex-shrink: 1; }
+.reset { cursor: pointer; position: fixed; top: 30px; right: 10px; font-size: 14px; color: #aaa; }
+.reset:hover { text-decoration: underline; }
+
+.columns { display: flex; flex-wrap: wrap; justify-content: center; }
+.col-1 { max-width: 1000px; margin: 20px; flex: 3 1 450px; }
+.col-2 { max-width: 320px; margin: 20px; flex: 1 1 135px; }
 
 button { cursor: pointer; outline: none; font-size: 18px; font-family: inherit;
     line-height: 1.5em; padding: 0 10px; }
@@ -22,21 +39,24 @@ button { cursor: pointer; outline: none; font-size: 18px; font-family: inherit;
     transition: background .2s, color .2s; }
 .button-row button:hover { background-color: #ccc; }
 .button-row button.active { background-color: #323248; color: #fff; }
-.options + button { flex-shrink: 0; border-bottom-right-radius: 6px; width: 100px;}
+.options + button { flex-shrink: 0; border-bottom-right-radius: 6px; width: 14%; }
 .button-row button:nth-child(7) { border-bottom-left-radius: 6px; }
+
+@media screen and (max-width: 820px) { button { font-size: 14px; } }
+@media screen and (max-width: 490px) { button { font-size: 12px; } }
 
 .warning { text-align: center; color: #aaa; font-style: italic; margin: 10px 0 0; }
 
 circle { fill: white; stroke: #aaa; }
 line { stroke: #aaa; }
 polygon { stroke: #aaa; fill : white; }
-text { fill: #aaa; font-size: 14px; text-anchor: middle; dominant-baseline: central; }
+text { fill: #aaa; font-size: 14px; text-anchor: middle; dominant-baseline: mathematical; }
 
 /*FIXME: Texts in nodes are still selectable on Firefox */
 .tonnetz, .clock { display: block; user-select: none; max-width: 100%; height: auto; }
 .tonnetz { border: 1px solid #323248; border-radius: 6px 6px 0 0; box-sizing: border-box; }
 .clock { stroke-width: 2px; margin-bottom: 10px;  }
-.clock text { font-weight: 500; font-size: 24px}
+.clock text { font-weight: 700; font-size: 24px}
 
 .activeDichord, .activeTrichord { stroke: #323248; stroke-width: 2; fill: #ccc; }
 .activeNode + text { fill: white; }
@@ -50,7 +70,7 @@ text { fill: #aaa; font-size: 14px; text-anchor: middle; dominant-baseline: cent
 .key-selector { display: flex; flex-wrap: wrap; justify-content: center; }
 .key-selector button { background: white; width: 28px; height: 28px; border: 2px solid #aaa;
     color: #aaa; padding: 0; margin: 2px; line-height: 25px; font-size: 14px;
-    border-radius: 20px; font-weight: 500; }
+    border-radius: 20px; font-weight: 700; }
 .key-selector .activeNode { color: white; }
 
 .activeNode[data-key="C"]  { fill: #b30469; stroke: #b30469; background: #b30469; border-color: #b30469; }
