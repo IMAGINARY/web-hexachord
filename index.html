@@ -4,9 +4,7 @@
         <meta charset="utf-8">
         <title>The Tonnetz – One Key, Many Representations</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
-
         <link rel="stylesheet" href="index.css">
-        <link href="https://fonts.googleapis.com/css?family=Quicksand:400,500" rel="stylesheet">
     </head>
     <body>
         <div class=header>
@@ -24,52 +22,55 @@
             <div style="background: #cc3450"></div>
         </div>
 
-        <h1>The Tonnetz</h1>
-        <h2>One key — Many Representations</h2>
-
         <div id="proto">
-            <div class="col-1" v-cloak>
-                <static-view-svg v-bind:height="600" v-bind:width="1000">
-                    <template v-slot="slotProps">
-                        <tonnetz-plan v-if="type=='tonnetz'" v-bind:notes="notes" v-bind:intervals="intervals" :bounds="slotProps.bounds" :trace="trace"></tonnetz-plan>
-                        <chicken-wire v-else v-bind:notes="notes" :bounds="slotProps.bounds" v-bind:intervals="intervals" :trace="trace"></chicken-wire>
-                    </template>
-                </static-view-svg>
+            <h1 v-cloak>{{ strings.title }}</h1>
+            <h2 v-cloak>{{ strings.subtitle }}</h2>
+            <div v-cloak class="reset" @click="reset">{{ strings.reset }}</div>
 
-                <!-- <drag-zoom-svg v-if="type=='tonnetz'" v-bind:height="400" v-bind:width="600" :scale-bounds="{mini:1,maxi:5}">
-                    <template v-slot="slotProps">
-                        <tonnetz-plan v-bind:notes="notes" v-bind:intervals="intervals" :bounds="slotProps.bounds" :trace="trace"></tonnetz-plan>
-                    </template>
-                </drag-zoom-svg>
-                <drag-zoom-svg v-else v-bind:height="400" v-bind:width="600" :scale-bounds="{mini:1,maxi:5}">
-                    <template v-slot="slotProps">
-                        <chicken-wire v-bind:notes="notes" :bounds="slotProps.bounds" v-bind:intervals="intervals"></chickenwire>
-                    </template>
-                </drag-zoom-svg> -->
-                <div class="button-row">
-                	<div class="options">
-	                    <button v-for="tonnetz in tonnetze" v-on:click="intervals=tonnetz" v-bind:class="{active:arrayEquals(tonnetz,intervals)}">{{ tonnetz.join(', ') }}</button>
-	                </div>
-                	<button v-on:click="type=(type === 'tonnetz' ? 'chicken' : 'tonnetz')" v-bind:class="{active: type=='chicken'}">Dual</button>
+            <div class="columns">
+                <div class="col-1" v-cloak>
+                    <static-view-svg v-bind:height="600" v-bind:width="1000">
+                        <template v-slot="slotProps">
+                            <tonnetz-plan v-if="type=='tonnetz'" v-bind:notes="notes" v-bind:intervals="intervals" :bounds="slotProps.bounds" :trace="trace"></tonnetz-plan>
+                            <chicken-wire v-else v-bind:notes="notes" :bounds="slotProps.bounds" v-bind:intervals="intervals" :trace="trace"></chicken-wire>
+                        </template>
+                    </static-view-svg>
+
+                    <!-- <drag-zoom-svg v-if="type=='tonnetz'" v-bind:height="400" v-bind:width="600" :scale-bounds="{mini:1,maxi:5}">
+                        <template v-slot="slotProps">
+                            <tonnetz-plan v-bind:notes="notes" v-bind:intervals="intervals" :bounds="slotProps.bounds" :trace="trace"></tonnetz-plan>
+                        </template>
+                    </drag-zoom-svg>
+                    <drag-zoom-svg v-else v-bind:height="400" v-bind:width="600" :scale-bounds="{mini:1,maxi:5}">
+                        <template v-slot="slotProps">
+                            <chicken-wire v-bind:notes="notes" :bounds="slotProps.bounds" v-bind:intervals="intervals"></chickenwire>
+                        </template>
+                    </drag-zoom-svg> -->
+                    <div class="button-row">
+                    	<div class="options">
+    	                    <button v-for="tonnetz in tonnetze" v-on:click="intervals=tonnetz" v-bind:class="{active:arrayEquals(tonnetz,intervals)}">{{ tonnetz.join(', ') }}</button>
+    	                </div>
+                    	<button v-on:click="type=(type === 'tonnetz' ? 'chicken' : 'tonnetz')" v-bind:class="{active: type=='chicken'}">{{ strings.dual }}</button>
+                    </div>
+                    <p class="warning" v-show="intervals.join('') === '228' || intervals.join('') === '246' || intervals.join('') === '336' || intervals.join('') === '444'">{{ strings.connected }}</p>
                 </div>
-                <p class="warning" v-show="intervals.join('') === '228' || intervals.join('') === '246' || intervals.join('') === '336' || intervals.join('') === '444'">This Tonnetz is non-connected and doesn’t contain every note.</p>
-            </div>
 
-            <div class="col-2" v-cloak>
-                <clock-octave v-bind:notes="notes" v-bind:height="400" v-bind:width="400" v-bind:intervals="1"></clock-octave>
-                <clock-octave v-bind:notes="notes" v-bind:height="400" v-bind:width="400" v-bind:intervals="7"></clock-octave>
-                <!-- <div class="key-selector">
-                    <button v-bind:data-key="note.text" v-for="note in notes" v-on:click="note.count=1-note.count" v-bind:class="{activeNode: note.count>0}">{{ note.text }}</button>
-                </div> -->
+                <div class="col-2" v-cloak>
+                    <clock-octave v-bind:notes="notes" v-bind:height="400" v-bind:width="400" v-bind:intervals="1"></clock-octave>
+                    <clock-octave v-bind:notes="notes" v-bind:height="400" v-bind:width="400" v-bind:intervals="7"></clock-octave>
+                    <!-- <div class="key-selector">
+                        <button v-bind:data-key="note.text" v-for="note in notes" v-on:click="note.count=1-note.count" v-bind:class="{activeNode: note.count>0}">{{ note.text }}</button>
+                    </div> -->
+                </div>
             </div>
 
             <div class="record" v-cloak>
-                <button id=load v-on:click='modal = true'>Load Midi File</button>
-                <button v-if="SMF" id=btn v-on:click='playPause'> {{ buttonText }} </button>
-                <button v-if="player.playing" id=stop @click="stop">Stop</button>
-                <button id=recordButton @click='recordToggle'>{{recordText}}</button>
-                <button v-if="SMF" id=rotate @click='rotate'>Rotate 180°</button>
-                <button v-if="SMF" id=translate @click='translate(1)'>Translate</button>
+                <button id=load v-on:click='modal = true'>{{ strings.load }}</button>
+                <button v-if="SMF" id=btn v-on:click='playPause'> {{ player.playing ? strings.pause : strings.play }} </button>
+                <button v-if="player.playing" id=stop @click="stop">{{ strings.stop }}</button>
+                <button id=recordButton @click='recordToggle'>{{ recording ? strings.stop : strings.start }}</button>
+                <button v-if="SMF" id=rotate @click='rotate'>{{ strings.rotate }}</button>
+                <button v-if="SMF" id=translate @click='translate(1)'>{{ strings.translate }}</button>
                 <!-- <button id=trace @click='traceToggle'>Tracing {{trace ? 'On' : 'Off'}}</button> -->
                 <!-- <button id=reset @click='resetNotes'>Reset</button> -->
                 <div class="modal-background" v-show="modal" v-on:click="modal = false"></div>
