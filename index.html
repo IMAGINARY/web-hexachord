@@ -67,8 +67,8 @@
             <div class="record" v-cloak>
                 <button id=load v-on:click='modal = true'>{{ strings.load }}</button>
                 <button v-if="SMF" id=btn v-on:click='playPause'> {{ player.playing ? strings.pause : strings.play }} </button>
-                <button v-if="player.playing" id=stop @click="stop">{{ strings.stop }}</button>
-                <button id=recordButton @click='recordToggle'>{{ recording ? strings.stop : strings.start }}</button>
+                <button v-if="player.playing" id=stop @click="stop">{{ strings.stopPlay }}</button>
+                <button id=recordButton @click='recordToggle'>{{ recording ? strings.stopRecord : strings.start }}</button>
                 <button v-if="SMF" id=rotate @click='rotate'>{{ strings.rotate }}</button>
                 <button v-if="SMF" id=translate @click='translate(1)'>{{ strings.translate }}</button>
                 <!-- <button id=trace @click='traceToggle'>Tracing {{trace ? 'On' : 'Off'}}</button> -->

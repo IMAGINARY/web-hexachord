@@ -17,8 +17,9 @@ const strings = {
     reset: 'Reset',
     load: 'Load Midi File',
     start: 'Start Recording',
-    stop: 'Stop Recording',
+    stopRecord: 'Stop Recording',
     play: 'Play',
+    stopPlay: 'Stop Playing',
     pause: 'Pause',
     rotate: 'Rotate 180°',
     translate: 'Translate',
@@ -31,12 +32,13 @@ const strings = {
     reset: 'Zurücksetzen',
     load: 'Midi Datei Laden',
     start: 'Aufnehmen',
-    stop: 'Aufnahme Stoppen',
+    stopRecord: 'Aufnahme Stoppen',
     play: 'Abspielen',
+    stopPlay: 'Abspiel Stoppen',
     pause: 'Pause',
     rotate: '180° Rotieren',
     translate: 'Verschieben',
-    connected: 'Dieses Tonnetz ist nicht verbunden, und enthält nicht alle noten.'
+    connected: 'Dieses Tonnetz ist nicht verbunden, und enthält nicht alle Noten.'
   }
 }
 
