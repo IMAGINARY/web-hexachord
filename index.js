@@ -991,15 +991,15 @@ var proto = new Vue({
         ],
         files: [
             {
-                humanName:"Elton John — ?",
+                humanName:"Elton John — Your Song",
                 fileName:"Midi/001_Elton_John-1.MID"
             },
             {
-                humanName:"Keith Jarrett — ?",
+                humanName:"Keith Jarrett — Extract of the Köln Concert",
                 fileName:"Midi/002_Keith_Jarrett.MID"
             },
             {
-                humanName:"J. S. Bach — ?",
+                humanName:"J. S. Bach — Aria of the Orchestral Suite n°3 (BWV 1068)",
                 fileName:"Midi/003_Bach.MID"
             },
             {
@@ -1007,7 +1007,7 @@ var proto = new Vue({
                 fileName:"Midi/004_Beatles_Hey_Jude.MID"
             },
             {
-                humanName:"The Beatles — Hey Jude (Negative Harmony)",
+                humanName:"The Beatles — Hey Jude (Negative Harmony Revised)",
                 fileName:"Midi/005_Beatles_Hey_Jude_NH-1.MID"
             },
         ],
