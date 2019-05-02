@@ -1028,7 +1028,6 @@ var proto = new Vue({
                 }),
         
         //TODO: Ask which Midi controller to use instead of blindly picking the first
-        keyboard: JZZ().openMidiIn(),
         SMF: undefined,
         player: JZZ.MIDI.SMF().player(),
         trace: false,
@@ -1037,12 +1036,35 @@ var proto = new Vue({
         strings: strings[language] || strings.en
     },
     created: function(){
+        //Delay connection of MIDI devices to let JZZ finish its initialisation
+        let deviceUpdate=this.deviceUpdate; // This is required to bring deviceUpdate into the lambda's context
+        setTimeout(function(){deviceUpdate({inputs:{added:JZZ().info().inputs}})},1000);
+        //Add a watcher to connect (and disconnect) new devices to the app
+        JZZ().onChange(this.deviceUpdate);
+        
+        console.log(JZZ.info().inputs);
         this.ascii.connect(piano);
-        this.keyboard.connect(piano);
         piano.connect(this.synth);
         piano.connect(this.midiHandler);   
     },
     methods:{
+        deviceUpdate: function({inputs:{added,removed}}){
+            //TODO: replace log by a small info message on screen
+            console.log('Updating MIDI devices');
+            if(added){
+                for(device of added){
+                    JZZ().openMidiIn(device.name).connect(piano);
+                    console.log('Added device: ',device);
+                }
+            }
+            if(removed){
+                for(device of removed){
+                    JZZ().openMidiIn(device.name).disconnect(piano);
+                    console.log('Removed device: ',device);
+                }
+            }
+            this.resetNotes(); // Connection/Disconnection can cause unbalanced note events
+        },
         arrayEquals: function (a, b) {
             if (a === b) return true;
             if (a == null || b == null) return false;
@@ -1058,7 +1080,11 @@ var proto = new Vue({
             if(midiEvent.isNoteOn()){
                 this.notes[noteIndex].count++;
             }else if(midiEvent.isNoteOff()){
-                this.notes[noteIndex].count--;
+                if(this.notes[noteIndex].count > 0){
+                    this.notes[noteIndex].count--;
+                }else{
+                    console.log('Warning: ignored unbalanced noteOff event', midiEvent);
+                }
             }
             if(record.recording){
                 if(midiEvent.isNoteOn()){
