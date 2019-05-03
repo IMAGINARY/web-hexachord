@@ -1046,7 +1046,7 @@ var proto = new Vue({
         setTimeout(function(){deviceUpdate({inputs:{added:JZZ().info().inputs}})},1000);
         //Add a watcher to connect (and disconnect) new devices to the app
         JZZ().onChange(this.deviceUpdate);
-        
+
         this.ascii.connect(piano);
         piano.connect(this.synth);
         piano.connect(this.midiHandler);   
@@ -1057,7 +1057,9 @@ var proto = new Vue({
             console.log('Updating MIDI devices');
             if(added){
                 for(device of added){
-                    JZZ().openMidiIn(device.name).connect(piano);
+                    JZZ().openMidiIn(device.name)
+                      .connect(piano) // Send the keyboard's events to the virtual piano which will relay them
+                      .connect(restartTimeout); // Reset the page's timeout upon input
                     console.log('Added device: ',device);
                 }
             }
