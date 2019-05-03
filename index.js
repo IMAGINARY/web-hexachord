@@ -1042,7 +1042,6 @@ var proto = new Vue({
         //Add a watcher to connect (and disconnect) new devices to the app
         JZZ().onChange(this.deviceUpdate);
         
-        console.log(JZZ.info().inputs);
         this.ascii.connect(piano);
         piano.connect(this.synth);
         piano.connect(this.midiHandler);   
