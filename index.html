@@ -52,7 +52,7 @@
     	                </div>
                     	<button v-on:click="type=(type === 'tonnetz' ? 'chicken' : 'tonnetz')" v-bind:class="{active: type=='chicken'}">{{ strings.dual }}</button>
                     </div>
-                    <p class="warning" v-show="intervals.join('') === '228' || intervals.join('') === '246' || intervals.join('') === '336' || intervals.join('') === '444'">{{ strings.connected }}</p>
+                    <p class="warning" :style="isConnected ? {visibility:'hidden'} : {}">{{ strings.connected }}</p>
                 </div>
 
                 <div class="col-2" v-cloak>

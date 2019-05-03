@@ -1035,6 +1035,11 @@ var proto = new Vue({
         modal: false,
         strings: strings[language] || strings.en
     },
+    computed:{
+        isConnected: function(){
+            return this.intervals.reduce(gcd,12)===1;
+        }
+    },
     created: function(){
         //Delay connection of MIDI devices to let JZZ finish its initialisation
         let deviceUpdate=this.deviceUpdate; // This is required to bring deviceUpdate into the lambda's context
