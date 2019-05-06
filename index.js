@@ -39,6 +39,21 @@ const strings = {
     rotate: '180° Rotieren',
     translate: 'Verschieben',
     connected: 'Dieses Tonnetz ist nicht verbunden, und enthält nicht alle Noten.'
+  },
+  fr: {
+    title: 'Le Tonnetz',
+    subtitle: 'Note unique — Représentations nombreuses',
+    dual: 'Dual',
+    reset: 'Réinitialiser',
+    load: 'Charger des données Midi',
+    start: 'Enregistrer',
+    stopRecord: "Arrêter l'enregistrement",
+    play: 'Lecture',
+    stopPlay: 'Arrêt',
+    pause: 'Pause',
+    rotate: 'Rotation à 180°',
+    translate: 'Translation',
+    connected: "Ce Tonnetz n'est pas connexe et ne contient pas toutes les notes."
   }
 }
 
