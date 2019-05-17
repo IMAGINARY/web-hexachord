@@ -67,17 +67,17 @@ function restartTimeout() {
 }
 document.addEventListener('touchdown', restartTimeout);
 document.addEventListener('mousemove', restartTimeout);
+//An additional listener is added upon connecting a Midi Input
 
+// ============================================================================
+// Misc utility functions
 
-var sqrt2=1.414
-var xstep=Math.sqrt(3)/2
-var baseSize=50
-
+//Clips a value to remain between the bounds fixed by mini and maxi
 function bound(value,mini,maxi){
     return Math.min(maxi,Math.max(mini,value));
 }
 
-//True modulo function (always positive)
+//True modulo function (always positive for positive period)
 function mod(value,period){
     return ((value%period)+period)%period
 }
@@ -90,11 +90,11 @@ function* range (begin, end, interval = 1) {
     }
 }
 
+//Greatest common divisor
 function gcd(a, b) {
     if ( ! b) {
         return a;
     }
-
     return gcd(b, a % b);
 };
 
@@ -121,33 +121,68 @@ function isSubset(a, b){
     return a.every(val => b.includes(val));
 }
 
-var piano = JZZ.input.Kbd({at:'piano', from:'C3', to:'B7', onCreate:function() {
-    this.getBlackKeys().setStyle({color:'#fff'});
-    // this.getKey('C5').setInnerHTML('<span class=inner>W</span>');
-    // this.getKey('C#5').setInnerHTML('<span class=inner>S</span>');
-    // this.getKey('D5').setInnerHTML('<span class=inner>X</span>');
-    // this.getKey('D#5').setInnerHTML('<span class=inner>D</span>');
-    // this.getKey('E5').setInnerHTML('<span class=inner>C</span>');
-    // this.getKey('F5').setInnerHTML('<span class=inner>V</span>');
-    // this.getKey('F#5').setInnerHTML('<span class=inner>G</span>');
-    // this.getKey('G5').setInnerHTML('<span class=inner>B</span>');
-    // this.getKey('G#5').setInnerHTML('<span class=inner>H</span>');
-    // this.getKey('A5').setInnerHTML('<span class=inner>N</span>');
-    // this.getKey('A#5').setInnerHTML('<span class=inner>J</span>');
-    // this.getKey('B5').setInnerHTML('<span class=inner>M</span>');
-    }
+//Is pitch a valid Midi pitch ?
+//TODO: Accept valid string identifiers too ('C#3', etc.)
+function isMidiPitch(pitch){
+    return pitch >= 0 && pitch < 128;
+}
+
+
+// ============================================================================
+// Geometry constants and coordinate conversions
+
+const xstep=Math.sqrt(3)/2 //Ratio of horizontal to vertical spacing = height of an equilateral triangle
+const baseSize=50 //Base scale: height of a vartical step (in svg coordinates)
+
+// Conversion between tonnetz coordinates and svg coordinates
+const logicalToSvgX = node => node.x * xstep * baseSize;
+const logicalToSvgY = node => (node.y + node.x/2) * baseSize;
+const logicalToSvg = node => ({x:logicalToSvgX(node), y:logicalToSvgY(node)})
+
+
+// ============================================================================
+// Create the virtual keyboard
+//TODO: Make a Vue component to encapsulate it 
+//TODO: Use an independent bus to connect the Midi pipeline (removing the piano breaks the app)
+var piano = JZZ.input.Kbd(
+    {
+        at:'piano', 
+        from:'C3', 
+        to:'B7', 
+        onCreate:function() {
+            this.getBlackKeys().setStyle({color:'#fff'});
+        // Uncomment to add keybind hints (azerty layout)
+        //TODO: handle this as a Vue component option
+        //TODO: probe keyboard layout instead of static keybind
+        // this.getKey('C5').setInnerHTML('<span class=inner>W</span>');
+        // this.getKey('C#5').setInnerHTML('<span class=inner>S</span>');
+        // this.getKey('D5').setInnerHTML('<span class=inner>X</span>');
+        // this.getKey('D#5').setInnerHTML('<span class=inner>D</span>');
+        // this.getKey('E5').setInnerHTML('<span class=inner>C</span>');
+        // this.getKey('F5').setInnerHTML('<span class=inner>V</span>');
+        // this.getKey('F#5').setInnerHTML('<span class=inner>G</span>');
+        // this.getKey('G5').setInnerHTML('<span class=inner>B</span>');
+        // this.getKey('G#5').setInnerHTML('<span class=inner>H</span>');
+        // this.getKey('A5').setInnerHTML('<span class=inner>N</span>');
+        // this.getKey('A#5').setInnerHTML('<span class=inner>J</span>');
+        }
     });
 
+// ============================================================================
+// Vue components and mixins
 
-// Empty Vue instance to act as a bus for Midi Events
+// Empty Vue instance to act as a bus for note interaction Events
 var midiBus=new Vue({});
 // Provides MIDI playback on click for the slotted element
-// The element must be valid svg markup
+// The slotted element must be valid svg markup
 let clickToPlayWrapper = {
     props: {
-        pitches: {
+        pitches: { //The midi pitches to be played upon activation 
             type:Array,
-            required:true
+            required:true,
+            validator: function(pitches){
+                pitches.every( isMidiPitch )
+            }
         }
     },
     data: function (){return{
@@ -156,18 +191,18 @@ let clickToPlayWrapper = {
     methods:{
         clickOn: function(){
             if(!this.clicked){
-                midiBus.$emit('note-on',this.pitches);
                 this.clicked=true;
+                midiBus.$emit('note-on',this.pitches);
             }
         },
         clickOff: function(){
             if(this.clicked){
-                midiBus.$emit('note-off',this.pitches);
                 this.clicked=false;
+                midiBus.$emit('note-off',this.pitches);
             }
         },
         enter: function(event){
-            if(event.pressure!==0){
+            if(event.pressure!==0){//Pointer is down
                 this.clickOn();
             }
         }
@@ -200,18 +235,14 @@ var activableMixin = {
     },
     computed: {
         isActive : function(){
-            return (this.forceState===-1 && this.notes.every(elem => elem.count > 0)) || this.forceState===2;
+            return (this.forceState===-1 && this.notes.every(elem => elem.count > 0)) // State is free and notes are active
+                || this.forceState===2; // or state is forced active
         },
         semiActive: function(){
             return this.forceState === 1;
         }
     }
 }
-
-// Conversion between tonnetz coordinates and svg coordinates
-const logicalToSvgX = node => node.x * xstep * baseSize;
-const logicalToSvgY = node => (node.y + node.x/2) * baseSize;
-const logicalToSvg = node => ({x:logicalToSvgX(node), y:logicalToSvgY(node)})
 
 // Note component : a clickable circle with the note name
 let noteTonnetz = {
@@ -232,13 +263,14 @@ let noteTonnetz = {
 let dichordTonnetz = {
     mixins: [activableMixin],
     props: {
-        shape:{
+        shape:{ //Relative (Tonnetz) coordinates of the chord
+            //TODO: Factorize with trichords
             type: Array,
             required: true
         }
     },
     computed: {
-        coords: function (){
+        coordsHTML: function (){ // Coordinates in the HTML format for lines
             return {
                 x1 : 0,
                 x2 : logicalToSvgX(this.shape[1]),
@@ -248,15 +280,15 @@ let dichordTonnetz = {
         },
         center: function (){
             return {
-                x: (this.coords.x2)/2,
-                y: (this.coords.y2)/2
+                x: (this.coordsHTML.x2)/2,
+                y: (this.coordsHTML.y2)/2
             }
         }
     },
     template: `
     <g>
         <line v-bind:class="{activeDichord:isActive, visitedDichord:semiActive}" 
-            v-bind="coords">
+            v-bind="coordsHTML">
         </line> 
         <circle v-bind:class="{activeDichord:isActive}"
                 v-bind:cx="center.x" v-bind:cy="center.y" r="2">
@@ -269,16 +301,16 @@ let dichordTonnetz = {
 let trichordTonnetz = {
     mixins: [activableMixin],
     props: {
-        shape: {
+        shape: { //Relative (Tonnetz) coordinates of the chord
             type: Array,
             required: true
         }
     },
     computed: {
-        coords: function (){
+        coords: function (){ // Relative SVG coordinates of the chord
             return this.shape.map(logicalToSvg);
         },
-        points: function (){
+        points: function (){ // Coordinates in the HTML format for polygons
             return this.coords.map( ({x,y}) => `${x},${y}` ).join(' ')
         }
     },
@@ -291,16 +323,18 @@ let trichordTonnetz = {
 // Slotted component that handles the drag and zoom logic on an svg
 let dragZoomSvg = {
     props: {
-        height: Number,
-        width: Number,
-        scaleBounds: Object
+        height: Number, // Height of the View (before reactive scaling)
+        width: Number, // Width of the View (before reactive scaling)
+        scaleBounds: Object // Min and max zoom level
     },
     data: function(){return{
-        tx : 0,
-        ty : 0,
-        scale: 2,
+        //Transformation data
+        tx      : 0,
+        ty      : 0,
+        scale   : 2,
+        //Capture data
         captureMouse: false,
-        clickedPos: {x:0,y:0},
+        clickedPos  : {x:0,y:0},
     }},
     computed: {
         transform: function(){
@@ -309,7 +343,7 @@ let dragZoomSvg = {
         viewbox: function(){
             return `0 0 ${this.width} ${this.height}`
         },
-        bounds: function(){
+        bounds: function(){ //SVG coordinates of the bounds to forward to children components
             return{
                 xmin:-this.tx,
                 ymin:-this.ty,
@@ -324,10 +358,16 @@ let dragZoomSvg = {
             // Bound the multiplier to acceptable values
             multiplier = bound(multiplier,this.scaleBounds.mini/this.scale,
                                           this.scaleBounds.maxi/this.scale);
+            if(multiplier===1){
+                return //Don't bother with the rest if nothing changes
+            }
             
+            //Find the pointer's position in the svg referential: this will be the fixed point of the zoom
+
             //On Firefox, offset is relative to the DOM element from which the event is fired,
             //not that in which it is handled, so this doesn't work everywhere
             //var pointer = {x:wheelEvent.offsetX,y:wheelEvent.offsetY};
+            //Workaround:
             let pointer = {x: wheelEvent.clientX - this.$el.getBoundingClientRect().left,
                            y: wheelEvent.clientY - this.$el.getBoundingClientRect().top};
 
@@ -335,6 +375,7 @@ let dragZoomSvg = {
             var pointerSvg = ({x:pointer.x/this.scale-this.tx,
                                y:pointer.y/this.scale-this.ty});
 
+            //Update translation to keep the point under the pointer in place
             this.tx = (this.tx + pointerSvg.x)/multiplier - pointerSvg.x
             this.ty = (this.ty + pointerSvg.y)/multiplier - pointerSvg.y
             this.scale = this.scale*multiplier
@@ -376,7 +417,7 @@ let dragZoomSvg = {
     `
 }
 
-// Slotted component that wraps the svg element
+// Slotted component that wraps the svg element and forwards bound info to the children
 let staticViewSvg = {
     props: {
         height: Number,
@@ -421,6 +462,7 @@ let staticViewSvg = {
     `
 }
 
+// Mixin that groups the trajectory functionnality. Calls on TonnetzLike properties and methods
 let traceHandler = {
     props:{
         trace: {
@@ -431,9 +473,10 @@ let traceHandler = {
     data: function(){return {
         trajectory : [], // The array of the traversed note nodes. A trajectory element should be a pair of a MIDI event and its associated position
         active: [],
-        visited: new Set()
+        visited: new Set() // The string keys of all visited nodes and chords
     }},
     computed:{
+        // The array of nodes (resp dichords and trichords) to be rendered, paired with their status
         nodeStateList: function(){
             return this.nodeList.map(node => ({node,status:this.status(node)}) );
         },
@@ -452,29 +495,32 @@ let traceHandler = {
         }
     },
     watch:{
-        trace: function(){
+        trace: function(){// If trace changes, either we don't need the trajectory anymore or we start a new one.
             this.resetTrajectory();
         },
-        intervals : function(){
+        intervals : function(){// If intervals changes, the current trajectory is no longer valid
+            //TODO: recalculate a valid trajectory ?
             this.resetTrajectory();
         }
     },
     methods:{
+        // Tells whether a given node is activated (2), was activated earlier (1) or is not (0), or lets the node decide (-1)
         status: function(node){
             if (this.trace){
                 let isActive = this.active.some(nodeB => nodeB.x==node.x && nodeB.y==node.y);
-                    if(isActive){
-                        return 2;
-                    }else{
-                        if(this.visited.has(this.genKey([node]))){
-                            return 1;
-                        }
-                        else{
-                            return 0;
-                        }
+                if(isActive){
+                    return 2;
+                }else{
+                    if(this.visited.has(this.genKey([node]))){
+                        return 1;
                     }
-            }else return -1;
+                    else{
+                        return 0;
+                    }
+                }
+            }else return -1; // Delegate activation control if trajectory mode is off (minimises recomputations)
         },
+        // Same as above but for chords
         chordStatus: function(nodes){
             if(this.trace){
                 if(nodes.every(node => this.active.some(nodeB => nodeB.x==node.x && nodeB.y==node.y))){
@@ -502,7 +548,7 @@ let traceHandler = {
                         {x:-1,y:2},{x:-2,y:1},{x:1,y:-2},{x:2,y:-1},{x:-2,y:2},{x:2,y:-2}]; // Neighbours of distance 2
             const d3 = [{x:0,y:3},{x:1,y:2},{x:2,y:1},{x:3,y:0},{x:0,y:-3},{x:-1,y:-2},{x:-2,y:-1},{x:-3,y:0},
                         {x:-3,y:3},{x:-3,y:2},{x:-3,y:1},{x:3,y:-3},{x:3,y:-2},{x:3,y:-1},
-                        {x:-2,y:3},{x:-1,y:3},{x:2,y:-3},{x:1,y:-3}];
+                        {x:-2,y:3},{x:-1,y:3},{x:2,y:-3},{x:1,y:-3}]; // Neighbours of distance 3
             if(mod(this.nodesToPitches([node])[0]-57,12)==note){
                 return node;
             }
@@ -516,7 +562,9 @@ let traceHandler = {
             }
             console.log("Couldn't find closest neighbour");
         },
+        // Marks active chords as visited
         updateChords: function(){
+            //TODO: Check only changed nodes.
             for(node of this.active){
                 for(dnode of [{x:1,y:0},{x:0,y:1},{x:-1,y:1}]){
                     if(this.active.some(nodeB => nodeB.x==node.x+dnode.x && nodeB.y==node.y+dnode.y)){
@@ -589,19 +637,21 @@ let traceHandler = {
     }
 }
 
-// The Tonnetz component : A large component that contains the drawing of the Tonnetz
+// Tonnetz-like component : A large component that holds the Tonnetz or the Chicken-Wire
 let tonnetzLike = {
     props: {
-        notes: Array,
-        intervals: {
+        notes: Array, // The notes and their status, forwarded from an upper-level
+        intervals: { // The intervals from which to build the Tonnetz
             type: Array,
             default: () => [3,4,5]
         },
-        bounds: {
+        bounds: { // The bounds of the drawing area
             type: Object
         }
     },
     computed: {
+        // Returns the notes which fit in the drawing area
+        // Actually also returns nodes which don't fit but for which a chord fits
         nodeList: function (){
             var nodes = [];
             var xmin = Math.floor(this.bounds.xmin/(baseSize*xstep))
@@ -616,6 +666,7 @@ let tonnetzLike = {
             }
             return nodes;
         },
+        // Returns the dichords which fit in the drawing area
         dichordList: function (){
             var nodes = [];
             //For each root
@@ -626,9 +677,10 @@ let tonnetzLike = {
             }
             return nodes;
         },
+        // Returns the triangles which fit in the drawing area
         trichordList: function (){
             var nodes = [];
-            //For each root
+            //For each root (though actually the fifth)
             for(node of this.nodeList){
                 nodes.push([{x:node.x,y:node.y},{x:node.x+1,y:node.y  },{x:node.x,y:node.y+1}]);
                 nodes.push([{x:node.x,y:node.y},{x:node.x-1,y:node.y+1},{x:node.x,y:node.y+1}]);
@@ -637,34 +689,43 @@ let tonnetzLike = {
         }
     },
     methods: {
+        // Converts an array of nodes to an array of the corresponding notes
         node2Notes: function (nodes){
             return nodes.map(node => this.notes[mod(-node.x*this.intervals[0]+node.y*this.intervals[2],12)])
         },
+        // Converts an array of nodes to an array of the corresponding Midi pitches
         nodesToPitches: function(nodes){
             return nodes.map(nodeIt => 81-nodeIt.x*this.intervals[0]+nodeIt.y*(this.intervals[2]-12));
         },
+        // Returns the svg transform string corresponding to a node's position
+        //TODO: Rename
         position: function(node){
             let {x,y} = logicalToSvg(node)
             return `translate(${x} ${y})`
         },
+        // Returns the relative shape of an array of nodes
         shape: function(nodes){
             return nodes.map(node => ({
                 x:node.x-nodes[0].x,
                 y:node.y-nodes[0].y
             }));
         },
+        // Unique identifier for an array of nodes
         genKey: function (n){
             return n.map(function textify(node){return `${node.x},${node.y}`}).join(' ')
         }
     }
 };
 
+// Global object to store recording and its state
+//TODO: Make into an true object with methods
 var record = {
     startTime:undefined,
     SMF:undefined,
     recording:false
 }
 
+// Specialisation of tonnetzLike to draw a Tonnetz
 let tonnetzPlan = {
     components: {
         clickToPlayWrapper,
@@ -675,6 +736,7 @@ let tonnetzPlan = {
     extends: tonnetzLike,
     mixins: [traceHandler],
     //TODO: Get the template into the base component (need to control the layering of elements)
+    // Might not be entirely possible, then factorise as much as possible leaving only the layer ordering
     template: `
         <g>
             <clickToPlayWrapper :transform="position(n.nodes[0])"
@@ -727,13 +789,14 @@ let trichordChicken = {
         },
         text: function(){
             //Is this a major or minor chord ?
+            //I.E. is the matching triangle in the Tonnetz right- or left-pointed
             //TODO: This is more than just minor or major, we have to clarify
             var major = (this.shape[0].y == this.shape[1].y);
             if (major){
-                return this.notes[2].text;
+                return this.notes[2].text; // notes[2] is the root
             }else{
                 var display = this.notes[2].text;
-                return display[0].toLowerCase() + display.substring(1);
+                return display[0].toLowerCase() + display.substring(1); //Uncapitalize the root, leave the alteration
             }
         }
     },
@@ -756,6 +819,7 @@ let dichordChicken = {
     props: ['notes','shape'],
     computed: {
         coords: function (){
+            //TODO: Simplify now that we use shapes
             //Coordinates of the reference point in the svg referential
             var x0 = logicalToSvgX(this.shape[0]);
             var y0 = logicalToSvgY(this.shape[0]);
@@ -814,9 +878,6 @@ let noteChicken = {
                 {x:x0+baseSize*xstep/3,  y:y0-baseSize/2},
                 {x:x0+baseSize*2*xstep/3,y:y0}
             ]
-            // return this.nodes.map(node => ({x:node.x * xstep * baseSize,
-            //                                 y:(node.y + node.x/2) * baseSize
-            //                               }) );
         },
         points: function (){
             return this.coords.map( ({x,y}) => `${x},${y}` ).join(' ')
@@ -828,7 +889,7 @@ let noteChicken = {
         `
 }
 
-// The chicken-wire's main component: handles the layout and structure
+// Specialisation of tonnetzLike to draw the Chickenwire Torus
 let chickenWire = {
     components: {
         clickToPlayWrapper,
@@ -924,6 +985,8 @@ let clockOctave = {
         points: function (){
             return this.getCoords.map( ({x,y}) => `${x},${y}` ).join(' ')
         },
+        //Returns true if any note is active
+        //TODO: Rename and repurpose as a count of active notes
         anyNote: function (){
             return this.notes.some(note => note.count>0);
         }
@@ -973,9 +1036,12 @@ let clockOctave = {
 
 // The App's main object, handling global concerns
 var proto = new Vue({
+    //TODO: break up some functions into separate components
     el: '#proto',
     components: {dragZoomSvg,tonnetzPlan,chickenWire,clockOctave,staticViewSvg},
     data: {
+        // The list of all 3-interval Tonnetze
+        //TODO: Move to non-reactive data
         tonnetze: [
             [1,1,10],
             [1,2,9],
@@ -990,8 +1056,11 @@ var proto = new Vue({
             [3,3,6],
             [4,4,4]
         ],
+        // The selected interval set
         intervals: [3,4,5],
+        // The type of representation for the main window ('tonnetz' or 'chicken')
         type: 'tonnetz',
+        // The list of all notes: their name and their status
         notes: [
             {text: 'A',  count:0},
             {text: 'Bb', count:0},
@@ -1006,6 +1075,9 @@ var proto = new Vue({
             {text: 'G',  count:0},
             {text: 'Ab', count:0}
         ],
+        // List of preset songs
+        //TODO: More formatted presentation
+        //STRETCH: Turn into a basic song library 
         files: [
             {
                 humanName:"Elton John — Your Song",
@@ -1028,7 +1100,10 @@ var proto = new Vue({
                 fileName:"Midi/005_Beatles_Hey_Jude_NH-1.MID"
             },
         ],
+        // Status text (obsolete)
+        //TODO: check that it's safe to remove
         loadlog: "*** MIDI.js is loading soundfont... ***",
+        // Synthetiser engine
         //TODO: Find a way to have nice output on Safari and Firefox
         synth: JZZ.synth.Tiny(),
         //synth:JZZ.synth.MIDIjs({ 
@@ -1037,17 +1112,23 @@ var proto = new Vue({
             //instrument: "acoustic_grand_piano" })
                 //.or(function(){ proto.loaded(); alert('Cannot load MIDI.js!\n' + this.err()); })
                 //.and(function(){ proto.loaded(); }),
+        // Azerty keyboard bindings
         ascii: JZZ.input.ASCII({//TODO: Adapt to keyboard layout
                 W:'C5', S:'C#5', X:'D5', D:'D#5', C:'E5', V:'F5',
                 G:'F#5', B:'G5', H:'Ab5', N:'A5', J:'Bb5', M:'B5'
                 }),
         
-        //TODO: Ask which Midi controller to use instead of blindly picking the first
+        // The currently loaded Midi file handler
         SMF: undefined,
+        // The Midi player provided by JZZ
         player: JZZ.MIDI.SMF().player(),
+        // Should trajectory drawing be active?
         trace: false,
+        // Is recording in progress?
         recording: false,
+        // Is the modal window open?
         modal: false,
+        // The localisation strings
         strings: strings[language] || strings.en
     },
     computed:{
@@ -1067,6 +1148,7 @@ var proto = new Vue({
         piano.connect(this.midiHandler);   
     },
     methods:{
+        //Handler for JZZ device change event
         deviceUpdate: function({inputs:{added,removed}}){
             //TODO: replace log by a small info message on screen
             console.log('Updating MIDI devices');
@@ -1086,6 +1168,8 @@ var proto = new Vue({
             }
             this.resetNotes(); // Connection/Disconnection can cause unbalanced note events
         },
+        //Deep compare for arrays
+        //TODO: Move to utils
         arrayEquals: function (a, b) {
             if (a === b) return true;
             if (a == null || b == null) return false;
@@ -1096,6 +1180,7 @@ var proto = new Vue({
             }
             return true;
         },
+        //Handler for Midi events coming from JZZ
         midiHandler: function (midiEvent){
             noteIndex = (midiEvent.getNote()+3) %12
             if(midiEvent.isNoteOn()){
@@ -1117,28 +1202,36 @@ var proto = new Vue({
                 }
             }
         },
+        //Resets load message
+        //TODO: should be safe to remove
         loaded: function(){
             this.loadlog = '';
         },
+        //Sets the load message to standby
+        //TODO: should be safe to remove
         clear: function() {
             this.stop()
             this.loadlog = 'please wait...';
         },
+        //Toggles playback
         playPause: function() {
             if (this.player.playing) {
                 this.player.pause();
-            } else if(this.player.paused){
+            }else if(this.player.paused){
                 this.player.resume();
             }else{
                 this.resetNotes();
                 this.player.play();
             }
         },
+        // Stops playback
         stop: function(){
             if(this.player){
-                this.player.stop();
+                this.player.stop(); 
             }
             setTimeout(this.resetNotes,10); // Reset in a timer in case some timers could not be cleared
+            //This can occur when some events'handling are queued behind this function
+            //TODO: Find if there is a way to clear queued events to handle this more cleanly
         },
         resetNotes: function(){
             for (note of this.notes){
@@ -1148,6 +1241,7 @@ var proto = new Vue({
         traceToggle: function(){
             this.trace = !this.trace;
         },
+        // Loads a Midi File from its byte representation
         //TODO: encapsulate this in a loader component
         load: function(data, name) {
             try {
@@ -1162,6 +1256,7 @@ var proto = new Vue({
                 throw e;
             }
         },
+        // Loads a Midi File from a file on disk
         fromFile: function () {
             if (window.FileReader) {
                 this.clear();
@@ -1181,6 +1276,7 @@ var proto = new Vue({
             } else
                 this.loadlog = 'File API is not supported in this browser.';
         },
+        // Loads a distant Midi file
         fromURL: function (url) {
             this.clear();
             //var url = document.getElementById('url').value;
@@ -1207,10 +1303,12 @@ var proto = new Vue({
                 this.loadlog = 'XMLHttpRequest error';
             }
         },
+        // Loads the preset demo song
         fromBase64: function () {
             this.clear();
             this.load(JZZ.lib.fromBase64(data), 'Base64 data');
         },
+        // Loads the recorded midi
         fromTrajectory : function () {
             //Stop playback to avoid overlapping
             if(this.player.playing){
@@ -1244,7 +1342,7 @@ var proto = new Vue({
         //Simple version operating on pitches alone
         rotateTrajectory : function (SMF) {
             for (SMFTrack of SMF){
-                //TODO: ignore drums track
+                //TODO: ignore drums track since midi pitch has a different meaning there
                 let symmetryCenter = undefined;
                 for (SME of SMFTrack){
                     let note = SME.getNote();
@@ -1265,6 +1363,7 @@ var proto = new Vue({
                 }
             }
         },
+        // Transposes a recording by a given number of semitones
         translateTrajectory : function (SMF,translate) {
             for (SMFTrack of SMF){
                 for (SME of SMFTrack){
@@ -1275,6 +1374,7 @@ var proto = new Vue({
                 }
             }
         },
+        // Handlers for playback events fired from the app
         noteOn: function(pitches){
             //var notes = this.node2Notes(nodes);
             for (var pitch of pitches){
@@ -1287,6 +1387,7 @@ var proto = new Vue({
                 piano.noteOff(0,pitch,100);
             }
         },
+        // Toggles recording and performs setup and unwinding of the recording
         recordToggle: function(){
             if(this.recording){
                 this.recording = false;
@@ -1303,6 +1404,7 @@ var proto = new Vue({
                 record.recording = true;
             }
         },
+        // Hard reset for the whole page
         reset() {
           window.location.reload();
         }
