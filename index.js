@@ -1121,7 +1121,7 @@ var proto = new Vue({
         // The currently loaded Midi file handler
         SMF: undefined,
         // The Midi player provided by JZZ
-        player: JZZ.MIDI.SMF().player(),
+        player: {playing:false}, // TODO: replace by a dummy player
         // Should trajectory drawing be active?
         trace: false,
         // Is recording in progress?
