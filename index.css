@@ -1,6 +1,6 @@
 /* Author: Corentin Guichaoua, Philipp Legner */
 
-/* @font-face {
+@font-face {
   font-family: 'Quicksand';
   font-style: normal;
   font-weight: normal;
@@ -12,7 +12,7 @@
   font-style: normal;
   font-weight: 700;
   src: url('fonts/quicksand-bold.woff') format('woff');
-} */
+}
 
 html, body { margin: 0; padding: 0; font-family: 'Quicksand'; color: #323248; }
 [v-cloak] { display: none; }
@@ -57,7 +57,7 @@ button { cursor: pointer; outline: none; font-size: 18px; font-family: inherit;
 circle { fill: white; stroke: #aaa; }
 line { stroke: #aaa; }
 polygon { stroke: #aaa; fill : white; }
-text { fill: #aaa; font-size: 14px; text-anchor: middle; dominant-baseline: middle; }
+text { fill: #aaa; font-size: 14px; text-anchor: middle; dominant-baseline: mathematical; }
 
 /*FIXME: Texts in nodes are still selectable on Firefox */
 .tonnetz, .clock { display: block; user-select: none; max-width: 100%; height: auto; }
