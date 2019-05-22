@@ -3,6 +3,9 @@
 // Vue.config.devtools = true
 // Vue.config.performance = true
 
+// Wait for libraries to be loaded
+fallback.ready(function(){
+
 // ============================================================================
 // i18n Strings
 
@@ -1427,3 +1430,4 @@ AAo+fzI+AAA+fzI+AAA+f1o+AApAfzJAAABDfzJDAABDf1pDAApAfzJAAAA+fzI+AAA8fzI8AAA+fzI+
 AABAfzJAAABAfzJAAABAf1pAAAo+fzI+AAA+fzI+AABAfzJAAAA+fzI+AAA8f2RAZABDZABIf1o8AABA\
 AABDAABIAAr/LwA=';
 
+}) // fallback.ready
