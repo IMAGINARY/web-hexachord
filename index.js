@@ -3,8 +3,6 @@
 // Vue.config.devtools = true
 // Vue.config.performance = true
 
-// Wait for libraries to be loaded
-fallback.ready(function(){
 
 // ============================================================================
 // i18n Strings
@@ -143,38 +141,13 @@ const logicalToSvg = node => ({x:logicalToSvgX(node), y:logicalToSvgY(node)})
 
 
 // ============================================================================
-// Create the virtual keyboard
-//TODO: Make a Vue component to encapsulate it 
-//TODO: Use an independent bus to connect the Midi pipeline (removing the piano breaks the app)
-var piano = JZZ.input.Kbd(
-    {
-        at:'piano', 
-        from:'C3', 
-        to:'B7', 
-        onCreate:function() {
-            this.getBlackKeys().setStyle({color:'#fff'});
-        // Uncomment to add keybind hints (azerty layout)
-        //TODO: handle this as a Vue component option
-        //TODO: probe keyboard layout instead of static keybind
-        // this.getKey('C5').setInnerHTML('<span class=inner>W</span>');
-        // this.getKey('C#5').setInnerHTML('<span class=inner>S</span>');
-        // this.getKey('D5').setInnerHTML('<span class=inner>X</span>');
-        // this.getKey('D#5').setInnerHTML('<span class=inner>D</span>');
-        // this.getKey('E5').setInnerHTML('<span class=inner>C</span>');
-        // this.getKey('F5').setInnerHTML('<span class=inner>V</span>');
-        // this.getKey('F#5').setInnerHTML('<span class=inner>G</span>');
-        // this.getKey('G5').setInnerHTML('<span class=inner>B</span>');
-        // this.getKey('G#5').setInnerHTML('<span class=inner>H</span>');
-        // this.getKey('A5').setInnerHTML('<span class=inner>N</span>');
-        // this.getKey('A#5').setInnerHTML('<span class=inner>J</span>');
-        }
-    });
-
-// ============================================================================
 // Vue components and mixins
 
-// Empty Vue instance to act as a bus for note interaction Events
-var midiBus=new Vue({});
+//TODO: Restructure to avoid having to forward declare it.
+var piano; //Variable to hold the virtual piano (built later once JZZ is loaded)
+var midiBus; //Variable to hold the bus for upgoing midiEvents (built once Vue is loaded)
+var proto; //Variable to hold the main app Object (built once everything is loaded)
+
 // Provides MIDI playback on click for the slotted element
 // The slotted element must be valid svg markup
 let clickToPlayWrapper = {
@@ -1036,8 +1009,45 @@ let clockOctave = {
 }
 
 
+// Wait for libraries to be loaded
+fallback.ready(function(){
+
+    // ============================================================================
+// Create the virtual keyboard
+
+//TODO: Make a Vue component to encapsulate it 
+//TODO: Use an independent bus to connect the Midi pipeline (removing the piano breaks the app)
+piano = JZZ.input.Kbd(
+{
+    at:'piano', 
+    from:'C3', 
+    to:'B7', 
+    onCreate:function() {
+        this.getBlackKeys().setStyle({color:'#fff'});
+    // Uncomment to add keybind hints (azerty layout)
+    //TODO: handle this as a Vue component option
+    //TODO: probe keyboard layout instead of static keybind
+    // this.getKey('C5').setInnerHTML('<span class=inner>W</span>');
+    // this.getKey('C#5').setInnerHTML('<span class=inner>S</span>');
+    // this.getKey('D5').setInnerHTML('<span class=inner>X</span>');
+    // this.getKey('D#5').setInnerHTML('<span class=inner>D</span>');
+    // this.getKey('E5').setInnerHTML('<span class=inner>C</span>');
+    // this.getKey('F5').setInnerHTML('<span class=inner>V</span>');
+    // this.getKey('F#5').setInnerHTML('<span class=inner>G</span>');
+    // this.getKey('G5').setInnerHTML('<span class=inner>B</span>');
+    // this.getKey('G#5').setInnerHTML('<span class=inner>H</span>');
+    // this.getKey('A5').setInnerHTML('<span class=inner>N</span>');
+    // this.getKey('A#5').setInnerHTML('<span class=inner>J</span>');
+    }
+});
+
+
+// Empty Vue instance to act as a bus for note interaction Events
+midiBus=new Vue({});
+
+
 // The App's main object, handling global concerns
-var proto = new Vue({
+proto = new Vue({
     //TODO: break up some functions into separate components
     el: '#proto',
     components: {dragZoomSvg,tonnetzPlan,chickenWire,clockOctave,staticViewSvg},
