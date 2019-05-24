@@ -1103,9 +1103,6 @@ var proto = new Vue({
                 fileName:"Midi/005_Beatles_Hey_Jude_NH-1.MID"
             },
         ],
-        // Status text (obsolete)
-        //TODO: check that it's safe to remove
-        loadlog: "*** MIDI.js is loading soundfont... ***",
         // Synthetiser engine
         //TODO: Find a way to have nice output on Safari and Firefox
         synth: JZZ.synth.Tiny(),
@@ -1205,17 +1202,6 @@ var proto = new Vue({
                 }
             }
         },
-        //Resets load message
-        //TODO: should be safe to remove
-        loaded: function(){
-            this.loadlog = '';
-        },
-        //Sets the load message to standby
-        //TODO: should be safe to remove
-        clear: function() {
-            this.stop()
-            this.loadlog = 'please wait...';
-        },
         //Toggles playback
         playPause: function() {
             if (this.player.playing) {
@@ -1252,10 +1238,8 @@ var proto = new Vue({
                 this.player = this.SMF.player();
                 this.player.connect(piano);
                 this.player.play();
-                this.loadlog = name;
             } catch (e) {
                 console.log(e);
-                this.loadlog = e;
                 throw e;
             }
         },
@@ -1277,7 +1261,7 @@ var proto = new Vue({
                 ;
                 reader.readAsArrayBuffer(f);
             } else
-                this.loadlog = 'File API is not supported in this browser.';
+                console.log('File API is not supported in this browser.');
         },
         // Loads a distant Midi file
         fromURL: function (url) {
@@ -1293,8 +1277,8 @@ var proto = new Vue({
                             for (var i = 0; i < r.length; i++)
                                 data += String.fromCharCode(r.charCodeAt(i) & 0xff);
                             proto.load(data, url);
-                        } else {
-                            this.loadlog = 'XMLHttpRequest error';
+                        }else{
+                            console.log("Couldn't execute xhttp request.");
                         }
                     }
                 }
@@ -1303,7 +1287,7 @@ var proto = new Vue({
                 xhttp.open('GET', encodeURIComponent(url), true);
                 xhttp.send();
             } catch (e) {
-                this.loadlog = 'XMLHttpRequest error';
+                console.log("Couldn't execute xhttp request.");
             }
         },
         // Loads the preset demo song
