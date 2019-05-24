@@ -125,9 +125,8 @@ function isSubset(a, b){
 }
 
 //Is pitch a valid Midi pitch ?
-//TODO: Accept valid string identifiers too ('C#3', etc.)
 function isMidiPitch(pitch){
-    return pitch >= 0 && pitch < 128;
+    return (pitch >= 0 && pitch < 128) || (JZZ.MIDI.noteValue(pitch) !== undefined);
 }
 
 
@@ -184,7 +183,7 @@ let clickToPlayWrapper = {
             type:Array,
             required:true,
             validator: function(pitches){
-                pitches.every( isMidiPitch )
+                return pitches.every( isMidiPitch )
             }
         }
     },
