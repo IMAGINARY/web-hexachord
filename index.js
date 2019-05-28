@@ -234,29 +234,40 @@ let noteTonnetz = {
         `
 };
 
-// Dichord component : a clickable line between the two notes that it contains, with a small circle for easier clicking
-let dichordTonnetz = {
+
+// Utility functions
+const average = arr => arr.reduce((a,b) => a + b, 0) / arr.length;
+
+// Common code to all chord components
+let chord = {
     mixins: [activableMixin],
     props: {
         shape:{ //Relative (Tonnetz) coordinates of the chord
-            //TODO: Factorize with trichords
             type: Array,
             required: true
         }
     },
     computed: {
-        coordsHTML: function (){ // Coordinates in the HTML format for lines
-            return {
-                x1 : 0,
-                x2 : logicalToSvgX(this.shape[1]),
-                y1 : 0,
-                y2 : logicalToSvgY(this.shape[1])
-            }
+        coords: function (){ // Relative SVG coordinates of the chord's notes
+            return this.shape.map(logicalToSvg);
         },
-        center: function (){
+        center: function (){ // The barycenter of the coordinates
+            return {x:average(this.coords.map(({x}) => x)),
+                    y:average(this.coords.map(({y}) => y))}
+        }
+    }
+}
+
+// Dichord component : a clickable line between the two notes that it contains, with a small circle for easier clicking
+let dichordTonnetz = {
+    extends: chord,
+    computed: {
+        coordsHTML: function (){ // Repackages coordinates in the HTML/SVG format for lines
             return {
-                x: (this.coordsHTML.x2)/2,
-                y: (this.coordsHTML.y2)/2
+                x1 : this.coords[0].x,
+                x2 : this.coords[1].x,
+                y1 : this.coords[0].y,
+                y2 : this.coords[1].y
             }
         }
     },
@@ -274,17 +285,8 @@ let dichordTonnetz = {
 
 // Trichord component : a clickable triangle between the three notes that it contains
 let trichordTonnetz = {
-    mixins: [activableMixin],
-    props: {
-        shape: { //Relative (Tonnetz) coordinates of the chord
-            type: Array,
-            required: true
-        }
-    },
+    extends: chord,
     computed: {
-        coords: function (){ // Relative SVG coordinates of the chord
-            return this.shape.map(logicalToSvg);
-        },
         points: function (){ // Coordinates in the HTML format for polygons
             return this.coords.map( ({x,y}) => `${x},${y}` ).join(' ')
         }
@@ -715,23 +717,14 @@ let tonnetzPlan = {
     `
 }
 
-// Utility functions
-const average = arr => arr.reduce((a,b) => a + b, 0) / arr.length;
-
 // ----------------------- Chicken Wire ---------------------------
 // TODO: Lots of duplicated code: factorize !
 
 // The chicken-wire's trichord component : a clickable circle representing the chord
 let trichordChicken = {
-    mixins: [activableMixin],
-    props: ['notes','shape','id'],
+    extends: chord,
+    props: ['id'],
     computed: {
-        x : function (){
-            return average(this.shape.map(logicalToSvgX));
-        },
-        y : function (){
-            return average(this.shape.map(logicalToSvgY));
-        },
         text: function(){
             //Is this a major or minor chord ?
             //I.E. is the matching triangle in the Tonnetz right- or left-pointed
@@ -748,9 +741,9 @@ let trichordChicken = {
     template: `
         <g v-bind:id="id">
             <circle v-bind:class="{activeTrichord:isActive, visitedTrichord:semiActive}"
-                v-bind:cx="x" v-bind:cy="y" r="10">
+                v-bind:cx="center.x" v-bind:cy="center.y" r="10">
             </circle> 
-            <text v-bind:x="x" v-bind:y="y" font-size="12">
+            <text v-bind:x="center.x" v-bind:y="center.y">
                 {{ text }}
             </text>
         </g>
@@ -760,43 +753,32 @@ let trichordChicken = {
 // The chicken-wire's dichord component: a line between the two trichords that contain the same notes,
 // with a small circle for easier clicking
 let dichordChicken = {
-    mixins: [activableMixin],
-    props: ['notes','shape'],
+    extends: chord,
     computed: {
-        coords: function (){
-            //TODO: Simplify now that we use shapes
-            //Coordinates of the reference point in the svg referential
-            var x0 = logicalToSvgX(this.shape[0]);
-            var y0 = logicalToSvgY(this.shape[0]);
+        coordsHTML: function (){
             //Orientation of the notes axis
-            var dx = logicalToSvgX(this.shape[1]) - logicalToSvgX(this.shape[0]);
-            var dy = logicalToSvgY(this.shape[1]) - logicalToSvgY(this.shape[0]);
+            let dx = this.coords[1].x - this.coords[0].x;
+            let dy = this.coords[1].y - this.coords[0].y;
             //The rotation that sends (1,0) to (dx,dy)
-            var rotate = function(point){ 
+            let rotate = function(point){ 
                 return {x: (dx*point.x-dy*point.y), 
                         y: (dy*point.x+dx*point.y)};
             };
             //The extremities of the segment if the points were 0,0 and 1,0
-            var p1 = {x:0.5,y:xstep/3};
-            var p2 = {x:0.5,y:-xstep/3};
+            const p1 = {x:0.5,y:xstep/3};
+            const p2 = {x:0.5,y:-xstep/3};
             return {
-                x1 : x0+rotate(p1).x,
-                x2 : x0+rotate(p2).x,
-                y1 : y0+rotate(p1).y,
-                y2 : y0+rotate(p2).y
-            }
-        },
-        center: function (){
-            return {
-                x: (this.coords.x1 + this.coords.x2)/2,
-                y: (this.coords.y1 + this.coords.y2)/2
+                x1 : rotate(p1).x,
+                x2 : rotate(p2).x,
+                y1 : rotate(p1).y,
+                y2 : rotate(p2).y
             }
         }
     },
     template: `
     <g>
         <line v-bind:class="{activeDichord:isActive, visitedDichord:semiActive}" 
-            v-bind="coords">
+            v-bind="coordsHTML">
         </line> 
         <circle v-bind:class="{activeDichord:isActive}"
                 v-bind:cx="center.x" v-bind:cy="center.y" r="2">
@@ -811,17 +793,13 @@ let noteChicken = {
     props: ['notes','nodes'],
     computed: {
         coords: function (){
-            //Coordinates of the reference point in the svg referential
-            var x0 = 0 //logicalToSvgX(this.shape[0]);
-            var y0 = 0 //logicalToSvgY(this.shape[0]);
-
             return[
-                {x:x0+baseSize*xstep/3,  y:y0+baseSize/2},
-                {x:x0-baseSize*xstep/3,  y:y0+baseSize/2},
-                {x:x0-baseSize*2*xstep/3,y:y0},
-                {x:x0-baseSize*xstep/3,  y:y0-baseSize/2},
-                {x:x0+baseSize*xstep/3,  y:y0-baseSize/2},
-                {x:x0+baseSize*2*xstep/3,y:y0}
+                {x:+baseSize*xstep/3,  y:+baseSize/2},
+                {x:-baseSize*xstep/3,  y:+baseSize/2},
+                {x:-baseSize*2*xstep/3,y:0},
+                {x:-baseSize*xstep/3,  y:-baseSize/2},
+                {x:+baseSize*xstep/3,  y:-baseSize/2},
+                {x:+baseSize*2*xstep/3,y:0}
             ]
         },
         points: function (){
