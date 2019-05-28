@@ -300,9 +300,17 @@ let dragZoomSvg = {
     props: {
         height: Number, // Height of the View (before reactive scaling)
         width: Number, // Width of the View (before reactive scaling)
-        scaleBounds: Object // Min and max zoom level
+        scaleBounds: {
+            type: Object, // Min and max zoom level
+            default: () => ({mini: 1, maxi: 2})
+        },
+        lock: { // Flag for deactivating DragNZoom functions
+            type: Boolean,
+            default: false
+        }
     },
     data: function(){return{
+        //TODO: Refactor all coordinates changes into a unified system
         //Transformation data
         tx      : 0,
         ty      : 0,
@@ -327,8 +335,13 @@ let dragZoomSvg = {
             }
         }
     },
+    watch:{
+        lock: this.captureOff
+    },
     methods: {
         zoomInOut: function (wheelEvent){
+            if(this.lock) return; //Ignore if locked
+
             var multiplier = Math.exp(-wheelEvent.deltaY/600)
             // Bound the multiplier to acceptable values
             multiplier = bound(multiplier,this.scaleBounds.mini/this.scale,
@@ -367,6 +380,7 @@ let dragZoomSvg = {
             return
         },
         captureOn: function (event){
+            if(this.lock) return // Ignore if locked
             this.captureMouse = true
             this.clickedPos = {x:event.clientX,y:event.clientY}
             return
@@ -392,50 +406,6 @@ let dragZoomSvg = {
     `
 }
 
-// Slotted component that wraps the svg element and forwards bound info to the children
-let staticViewSvg = {
-    props: {
-        height: Number,
-        width: Number,
-        tx : {
-            type: Number,
-            default: 0
-        },
-        ty : {
-            type: Number,
-            default: 0
-        },
-        scale: {
-            type: Number,
-            default: 2
-        },
-    },
-    computed: {
-        transform: function(){
-            return `scale(${this.scale}) translate(${this.tx} ${this.ty})`
-        },
-        viewbox: function(){
-            return `0 0 ${this.width} ${this.height}`
-        },
-        bounds: function(){
-            return{
-                xmin:-this.tx,
-                ymin:-this.ty,
-                xmax:-this.tx+this.width /this.scale,
-                ymax:-this.ty+this.height/this.scale,
-            }
-        }
-    },
-    template: `
-        <svg id="svg" class="tonnetz" 
-        v-bind:width="width" v-bind:height="height" 
-        v-bind:viewBox="viewbox" >
-            <g ref="trans" v-bind:transform="transform">
-                <slot :bounds="bounds"/>
-            </g>
-        </svg>
-    `
-}
 
 // Mixin that groups the trajectory functionnality. Calls on TonnetzLike properties and methods
 let traceHandler = {
@@ -1050,7 +1020,7 @@ midiBus=new Vue({});
 proto = new Vue({
     //TODO: break up some functions into separate components
     el: '#proto',
-    components: {dragZoomSvg,tonnetzPlan,chickenWire,clockOctave,staticViewSvg},
+    components: {dragZoomSvg,tonnetzPlan,chickenWire,clockOctave},
     data: {
         // The list of all 3-interval Tonnetze
         //TODO: Move to non-reactive data
