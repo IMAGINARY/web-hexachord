@@ -205,7 +205,8 @@ var activableMixin = {
         },
         forceState:{ // -1, 0, 1, 2 for free, inactive, traversed and active respectively
             type: Number,
-            default: -1
+            default: -1,
+            validator: n => [-1,0,1,2].includes(n)
         }
     },
     computed: {
