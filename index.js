@@ -662,7 +662,35 @@ let tonnetzLike = {
         genKey: function (n){
             return n.map(function textify(node){return `${node.x},${node.y}`}).join(' ')
         }
-    }
+    },
+    subtemplateNote:`
+            <clickToPlayWrapper :transform="position(n.nodes[0])"
+            v-for="n in trichordStateList" v-bind:key="genKey(n.nodes)"
+            :pitches="nodesToPitches(n.nodes)">
+                <trichord 
+                v-bind:notes="memoNode2Notes(n.nodes)"
+                v-bind:nodes="n.nodes"
+                :shape="memoShape(n.nodes)"
+                :forceState="n.status"
+                />
+    </clickToPlayWrapper>`,
+    subtemplateDichord:`
+            <clickToPlayWrapper :transform="position(n.nodes[0])"
+            v-for="n in dichordStateList" v-bind:key="genKey(n.nodes)"
+            :pitches="nodesToPitches(n.nodes)">
+                <dichord 
+                v-bind:shape="memoShape(n.nodes)"
+                v-bind:notes="memoNode2Notes(n.nodes)"
+                :forceState="n.status"/>
+    </clickToPlayWrapper>`,
+    subtemplateTrichord:`
+            <clickToPlayWrapper :transform="position(n.node)"
+            v-for="n in nodeStateList" v-bind:key="genKey([n.node])"
+            :pitches="nodesToPitches([n.node])">
+                <note v-bind:notes="memoNode2Notes([n.node])"
+                v-bind:nodes="[n.node]"
+                :forceState="n.status"/>
+    </clickToPlayWrapper>`
 };
 
 // Global object to store recording and its state
@@ -683,37 +711,11 @@ let tonnetzPlan = {
     },
     extends: tonnetzLike,
     mixins: [traceHandler],
-    //TODO: Get the template into the base component (need to control the layering of elements)
-    // Might not be entirely possible, then factorise as much as possible leaving only the layer ordering
     template: `
         <g>
-            <clickToPlayWrapper :transform="position(n.nodes[0])"
-            v-for="n in trichordStateList" v-bind:key="genKey(n.nodes)"
-            :pitches="nodesToPitches(n.nodes)">
-                <trichord 
-                v-bind:notes="memoNode2Notes(n.nodes)"
-                v-bind:nodes="n.nodes"
-                :shape="memoShape(n.nodes)"
-                :forceState="n.status"
-                />
-            </clickToPlayWrapper>
-
-            <clickToPlayWrapper :transform="position(n.nodes[0])"
-            v-for="n in dichordStateList" v-bind:key="genKey(n.nodes)"
-            :pitches="nodesToPitches(n.nodes)">
-                <dichord 
-                v-bind:shape="memoShape(n.nodes)"
-                v-bind:notes="memoNode2Notes(n.nodes)"
-                :forceState="n.status"/>
-            </clickToPlayWrapper>
-
-            <clickToPlayWrapper :transform="position(n.node)"
-            v-for="n in nodeStateList" v-bind:key="genKey([n.node])"
-            :pitches="nodesToPitches([n.node])">
-                <note v-bind:notes="memoNode2Notes([n.node])"
-                v-bind:nodes="[n.node]"
-                :forceState="n.status"/>
-            </clickToPlayWrapper>
+            ${tonnetzLike.subtemplateNote}
+            ${tonnetzLike.subtemplateDichord}
+            ${tonnetzLike.subtemplateTrichord}    
         </g>
     `
 }
@@ -825,33 +827,9 @@ let chickenWire = {
     mixins: [traceHandler],
     template: `
         <g>
-            <clickToPlayWrapper :transform="position(n.node)"
-            v-for="n in nodeStateList" v-bind:key="genKey([n.node])"
-            :pitches="nodesToPitches([n.node])">
-                <note
-                v-bind:notes="node2Notes([n.node])"
-                v-bind:nodes="[n.node]"
-                :forceState="n.status"
-                />
-            </clickToPlayWrapper>
-
-            <clickToPlayWrapper :transform="position(n.nodes[0])"
-            v-for="n in dichordStateList" v-bind:key="genKey(n.nodes)"
-            :pitches="nodesToPitches(n.nodes)">
-                <dichord 
-                v-bind:notes="node2Notes(n.nodes)"
-                v-bind:shape="shape(n.nodes)"
-                :forceState="n.status"/>
-            </clickToPlayWrapper>
-            
-            <clickToPlayWrapper :transform="position(n.nodes[0])"
-            v-for="n in trichordStateList" v-bind:key="genKey(n.nodes)"
-            :pitches="nodesToPitches(n.nodes)">
-                <trichord
-                v-bind:notes="node2Notes(n.nodes)"
-                v-bind:shape="shape(n.nodes)"
-                :forceState="n.status"/>
-            </clickToPlayWrapper>
+        ${tonnetzLike.subtemplateTrichord}
+        ${tonnetzLike.subtemplateDichord}   
+        ${tonnetzLike.subtemplateNote} 
         </g>
     `
 }
