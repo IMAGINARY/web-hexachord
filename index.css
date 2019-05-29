@@ -59,11 +59,11 @@ line { stroke: #aaa; }
 polygon { stroke: #aaa; fill : white; }
 text { fill: #aaa; font-size: 14px; text-anchor: middle; dominant-baseline: mathematical; }
 
-/*FIXME: Texts in nodes are still selectable on Firefox */
 .tonnetz, .clock { display: block; user-select: none; max-width: 100%; height: auto; }
 .tonnetz { border: 1px solid #323248; border-radius: 6px 6px 0 0; box-sizing: border-box; }
 .clock { stroke-width: 2px; margin-bottom: 10px;  }
 .clock text { font-weight: 700; font-size: 24px}
+.noteClock circle { r: 24 }
 
 .activeDichord, .activeTrichord { stroke: #323248; stroke-width: 2; fill: #ccc; }
 .activeNode + text { fill: white; }
@@ -73,6 +73,16 @@ text { fill: #aaa; font-size: 14px; text-anchor: middle; dominant-baseline: math
 .visitedNode { fill: lightyellow; }
 .visitedDichord { stroke-width : 2; }
 .visitedTrichord { fill : lightgreen; }
+
+/*Tonnetz-specific stylings */
+.tonnetzNote circle { r: 12 }
+.tonnetzDichord circle { r: 2}
+/* .tonnetzTrichord */
+/* CWT-specific stylings*/
+/* .chickenNote */
+.chickenDichord circle { r: 2}
+.chickenTrichord circle { r: 10 }
+.chickenTrichord text {font-size: 70%}
 
 .key-selector { display: flex; flex-wrap: wrap; justify-content: center; }
 .key-selector button { background: white; width: 28px; height: 28px; border: 2px solid #aaa;

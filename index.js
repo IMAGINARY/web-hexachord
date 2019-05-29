@@ -224,9 +224,9 @@ var activableMixin = {
 let noteTonnetz = {
     mixins: [activableMixin],
     template: `
-        <g>
+        <g class="tonnetzNote">
             <circle v-bind:class="{activeNode:isActive, visitedNode:semiActive}"
-                r="12" v-bind:data-key="notes[0].text">
+                v-bind:data-key="notes[0].text">
             </circle> 
             <text>
                 {{ notes[0].text }}
@@ -273,12 +273,12 @@ let dichordTonnetz = {
         }
     },
     template: `
-    <g>
+    <g class="tonnetzDichord">
         <line v-bind:class="{activeDichord:isActive, visitedDichord:semiActive}" 
             v-bind="coordsHTML">
         </line> 
         <circle v-bind:class="{activeDichord:isActive}"
-                v-bind:cx="center.x" v-bind:cy="center.y" r="2">
+                v-bind:cx="center.x" v-bind:cy="center.y">
         </circle> 
     </g>
     `
@@ -294,6 +294,7 @@ let trichordTonnetz = {
     },
     template: `
         <polygon v-bind:class="{activeTrichord:isActive, visitedTrichord:semiActive}" 
+            class="tonnetzTrichord"
             v-bind:points="points"/>
         `
 };
@@ -743,9 +744,9 @@ let trichordChicken = {
         }
     },
     template: `
-        <g v-bind:id="id">
+        <g v-bind:id="id" class=chickenTrichord>
             <circle v-bind:class="{activeTrichord:isActive, visitedTrichord:semiActive}"
-                v-bind:cx="center.x" v-bind:cy="center.y" r="10">
+                v-bind:cx="center.x" v-bind:cy="center.y">
             </circle> 
             <text v-bind:x="center.x" v-bind:y="center.y">
                 {{ text }}
@@ -780,12 +781,12 @@ let dichordChicken = {
         }
     },
     template: `
-    <g>
+    <g class="chickenDichord">
         <line v-bind:class="{activeDichord:isActive, visitedDichord:semiActive}" 
             v-bind="coordsHTML">
         </line> 
         <circle v-bind:class="{activeDichord:isActive}"
-                v-bind:cx="center.x" v-bind:cy="center.y" r="2">
+                v-bind:cx="center.x" v-bind:cy="center.y">
         </circle> 
     </g>
     `
@@ -811,7 +812,7 @@ let noteChicken = {
         }
     },
     template: `
-        <polygon v-bind:class="{activeNode:isActive, visitedNode:semiActive}" 
+        <polygon v-bind:class="{activeNode:isActive, visitedNode:semiActive, chickenNote}" 
             v-bind:points="points" v-bind:data-key="notes[0].text"/>
         `
 }
@@ -838,15 +839,9 @@ let chickenWire = {
 // Note component : a clickable circle with the note name
 let noteClock = {
     mixins: [activableMixin],
-    props:{
-        nodeRadius: {
-            type:Number,
-            default:24
-        }
-    },
     template: `
         <g class=noteClock>
-            <circle v-bind:class="{activeNode:isActive}" :r="nodeRadius" v-bind:data-key="notes[0].text">
+            <circle v-bind:class="{activeNode:isActive}" v-bind:data-key="notes[0].text">
             </circle> 
             <text>
                 {{ notes[0].text }}
@@ -879,8 +874,9 @@ let clockOctave = {
             return {y:this.height/2,x:this.width/2}
         },
         radius: function(){
-            const nodeStrokeWidth = 2; //TODO: adjust according to the style sheet
-            return Math.min(this.height/2,this.width/2) - this.nodeRadius - nodeStrokeWidth/2;
+            const nodeRadius = 24;
+            const nodeStrokeWidth = 2; //TODO: dynamically adjust values according to the style sheet
+            return Math.min(this.height/2,this.width/2) - nodeRadius - nodeStrokeWidth/2;
         },
         viewbox: function(){
             return `0 0 ${this.width} ${this.height}`
@@ -937,7 +933,7 @@ let clockOctave = {
             v-bind:key="genKey([n])"
             :transform="posToTransform(position(n))" v-once>
                 <note-clock
-                v-bind:notes="node2Notes([n])" :nodeRadius="nodeRadius"
+                v-bind:notes="node2Notes([n])"
                 />
             </clickToPlayWrapper>
             
