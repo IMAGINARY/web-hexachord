@@ -1008,17 +1008,17 @@ proto = new Vue({
         // The list of all notes: their name and their status
         notes: [
             {text: 'A',  count:0},
-            {text: 'Bb', count:0},
+            {text: 'A♯', count:0},
             {text: 'B',  count:0},
             {text: 'C',  count:0},
-            {text: 'Db', count:0},
+            {text: 'C♯', count:0},
             {text: 'D',  count:0},
-            {text: 'Eb', count:0},
+            {text: 'D♯', count:0},
             {text: 'E',  count:0},
             {text: 'F',  count:0},
-            {text: 'Gb', count:0},
+            {text: 'F♯', count:0},
             {text: 'G',  count:0},
-            {text: 'Ab', count:0}
+            {text: 'G♯', count:0}
         ],
         // List of preset songs
         //TODO: More formatted presentation
