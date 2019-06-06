@@ -1082,6 +1082,8 @@ proto = new Vue({
         // Is the modal window open?
         modal: false,
         // The localisation strings
+        allStrings: strings,
+        // The picked locale
         strings: strings[language] || strings.en
     },
     computed:{
@@ -1345,8 +1347,15 @@ proto = new Vue({
             }
         },
         // Hard reset for the whole page
-        reset() {
-          window.location.reload();
+        // TODO: switch language without reloading
+        reset(option) {
+            if(option){
+                window.location.search = '?hl='+option;
+                console.log(window.location)
+            }
+            else{
+                window.location.reload();
+            }
         }
     },
     mounted(){

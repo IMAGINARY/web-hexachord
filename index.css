@@ -33,6 +33,9 @@ div { /* No reason for anything to be selectable */
 .reset { cursor: pointer; position: fixed; top: 30px; right: 10px; font-size: 14px; color: #aaa; }
 .reset:hover { text-decoration: underline; }
 
+.languageSwitcher { cursor: pointer; position: fixed; top: 30px; left: 10px; font-size: 14px; color: #aaa; }
+.languageSwitcher div:hover { text-decoration: underline; }
+
 .columns { display: flex; flex-wrap: wrap; justify-content: center; }
 .col-1 { max-width: 1000px; margin: 20px; flex: 3 1 450px; }
 .col-2 { max-width: 320px; margin: 20px; flex: 1 1 135px; }
