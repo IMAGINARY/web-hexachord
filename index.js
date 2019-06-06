@@ -393,7 +393,17 @@ let dragZoomSvg = {
         captureOff: function (event){
             this.captureMouse = false
             return
+        },
+        // Centers the view to the (SVG) coordinates specified
+        // TODO: Softer logic for camera panning (only if moving too far)
+        panTo: function(targetPosition){
+            //TODO: Animate transition
+            this.tx= -targetPosition.x - this.width/this.scale/2
+            this.ty= -targetPosition.y - this.height/this.scale/2
         }
+    },
+    mounted(){
+        this.$on('pan',this.panTo);
     },
     template: `
         <svg id="svg" class="tonnetz" 
@@ -812,7 +822,7 @@ let noteChicken = {
         }
     },
     template: `
-        <polygon v-bind:class="{activeNode:isActive, visitedNode:semiActive, chickenNote}" 
+        <polygon v-bind:class="{activeNode:isActive, visitedNode:semiActive}" class="chickenNote" 
             v-bind:points="points" v-bind:data-key="notes[0].text"/>
         `
 }
@@ -1020,6 +1030,7 @@ proto = new Vue({
             {text: 'G',  count:0},
             {text: 'G♯', count:0}
         ],
+
         // List of preset songs
         //TODO: More formatted presentation
         //STRETCH: Turn into a basic song library 
