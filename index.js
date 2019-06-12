@@ -395,11 +395,17 @@ let dragZoomSvg = {
             return
         },
         // Centers the view to the (SVG) coordinates specified
-        // TODO: Softer logic for camera panning (only if moving too far)
+        // TODO: Finer logic for camera panning (move if moving close to the edges)
         panTo: function(targetPosition){
-            //TODO: Animate transition
-            this.tx= - targetPosition.x + this.width/this.scale/2
-            this.ty= - targetPosition.y + this.height/this.scale/2
+            if(targetPosition.x > this.bounds.xmin && targetPosition.x < this.bounds.xmax
+             &&targetPosition.y > this.bounds.ymin && targetPosition.y < this.bounds.ymax)
+            {
+                return
+            }else{
+                //TODO: Animate transition
+                this.tx= - targetPosition.x + this.width/this.scale/2
+                this.ty= - targetPosition.y + this.height/this.scale/2
+            }
         }
     },
     mounted(){
