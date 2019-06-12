@@ -1221,7 +1221,9 @@ proto = new Vue({
         },
         // Loads a distant Midi file
         fromURL: function (url) {
-            this.clear();
+            if(this.player.playing){
+                this.stop();
+            }
             //var url = document.getElementById('url').value;
             try {
                 var xhttp = new XMLHttpRequest();
