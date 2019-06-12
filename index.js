@@ -398,8 +398,8 @@ let dragZoomSvg = {
         // TODO: Softer logic for camera panning (only if moving too far)
         panTo: function(targetPosition){
             //TODO: Animate transition
-            this.tx= -targetPosition.x - this.width/this.scale/2
-            this.ty= -targetPosition.y - this.height/this.scale/2
+            this.tx= - targetPosition.x + this.width/this.scale/2
+            this.ty= - targetPosition.y + this.height/this.scale/2
         }
     },
     mounted(){
