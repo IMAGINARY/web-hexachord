@@ -961,6 +961,111 @@ let clockOctave = {
     `
 }
 
+let songLoader = {
+    props:{
+        fileBrowser: Boolean,
+        freeURL: Boolean
+    },
+    data: function(){return {
+        // List of preset songs
+        //TODO: More formatted presentation
+        //STRETCH: Turn into a basic song library 
+        files: [
+            {
+                humanName:"Elton John — Your Song",
+                fileName:"Midi/001_Elton_John-1.MID"
+            },
+            {
+                humanName:"Keith Jarrett — Extract of the Köln Concert",
+                fileName:"Midi/002_Keith_Jarrett.MID"
+            },
+            {
+                humanName:"J. S. Bach — Aria of the Orchestral Suite n°3 (BWV 1068)",
+                fileName:"Midi/003_Bach.MID"
+            },
+            {
+                humanName:"The Beatles — Hey Jude",
+                fileName:"Midi/004_Beatles_Hey_Jude.MID"
+            },
+            {
+                humanName:"The Beatles — Hey Jude (Negative Harmony Revised)",
+                fileName:"Midi/005_Beatles_Hey_Jude_NH-1.MID"
+            },
+        ],
+    }},
+    methods:{
+        // Loads a Midi File from a file on disk
+        fromFile: function () {
+            if (window.FileReader) {
+                var reader = new FileReader();
+                var f = document.getElementById('file').files[0];
+                _this = this;
+                reader.onload = function(e) {
+                    var data = '';
+                    var bytes = new Uint8Array(e.target.result);
+                    data = bytes.reduce((d,byte) => d+String.fromCharCode(byte),'')
+
+                    _this.$emit('load',data, f.name);
+                }
+                ;
+                reader.readAsArrayBuffer(f);
+            } else
+                console.log('File API is not supported in this browser.');
+        },
+        // Loads a distant Midi file
+        fromURL: function (url) {
+            //var url = document.getElementById('url').value;
+            try {
+                var xhttp = new XMLHttpRequest();
+                _this = this;
+                xhttp.onreadystatechange = function() {
+                    if (this.readyState == 4) {
+                        if (this.status == 200) {
+                            var r = xhttp.responseText;
+                            var data = '';
+                            for (var i = 0; i < r.length; i++)
+                                data += String.fromCharCode(r.charCodeAt(i) & 0xff);
+                            _this.$emit('load',data, url);
+                        }else{
+                            console.log("Couldn't execute xhttp request.");
+                        }
+                    }
+                }
+                ;
+                xhttp.overrideMimeType('text/plain; charset=x-user-defined');
+                xhttp.open('GET', encodeURIComponent(url), true);
+                xhttp.send();
+            } catch (e) {
+                console.log("Couldn't execute xhttp request.");
+            }
+        },
+        // Loads the preset demo song
+        fromBase64: function () {
+            this.$emit('load', JZZ.lib.fromBase64(data), 'Base64 data');
+        },
+    },
+    //TODO: Use localisation strings here too
+    template: `
+    <div>
+        <div class="modal-background" v-on:click="$emit('cancel')"></div>
+        <div class="modal">
+            <p v-if="fileBrowser"><input type=file id=file size=40 v-on:change='fromFile()'></p><hr>
+            <template v-for="song in files">
+                <button @click="fromURL(song.fileName)" class="song-select">
+                    {{song.humanName}}
+                </button>
+                <br/>
+            </template>
+            <!-- TODO: repair
+            <form v-on:submit.prevent='fromURL()'>
+                <input type=text id=url value='https://jazz-soft.net/demo/midi/furelise.mid' size=80>
+                <button type=submit>Load from URL</button>
+            </form> -->
+        </div>
+    </div>
+    `
+}
+
 
 // Wait for libraries to be loaded
 fallback.ready(function(){
@@ -1003,7 +1108,7 @@ midiBus=new Vue({});
 proto = new Vue({
     //TODO: break up some functions into separate components
     el: '#proto',
-    components: {dragZoomSvg,tonnetzPlan,chickenWire,clockOctave},
+    components: {dragZoomSvg,tonnetzPlan,chickenWire,clockOctave,songLoader},
     data: {
         // The list of all 3-interval Tonnetze
         //TODO: Move to non-reactive data
@@ -1041,31 +1146,6 @@ proto = new Vue({
             {text: 'G♯', count:0}
         ],
 
-        // List of preset songs
-        //TODO: More formatted presentation
-        //STRETCH: Turn into a basic song library 
-        files: [
-            {
-                humanName:"Elton John — Your Song",
-                fileName:"Midi/001_Elton_John-1.MID"
-            },
-            {
-                humanName:"Keith Jarrett — Extract of the Köln Concert",
-                fileName:"Midi/002_Keith_Jarrett.MID"
-            },
-            {
-                humanName:"J. S. Bach — Aria of the Orchestral Suite n°3 (BWV 1068)",
-                fileName:"Midi/003_Bach.MID"
-            },
-            {
-                humanName:"The Beatles — Hey Jude",
-                fileName:"Midi/004_Beatles_Hey_Jude.MID"
-            },
-            {
-                humanName:"The Beatles — Hey Jude (Negative Harmony Revised)",
-                fileName:"Midi/005_Beatles_Hey_Jude_NH-1.MID"
-            },
-        ],
         // Synthetiser engine
         //TODO: Find a way to have nice output on Safari and Firefox
         synth: JZZ.synth.Tiny(),
@@ -1198,6 +1278,11 @@ proto = new Vue({
         // Loads a Midi File from its byte representation
         //TODO: encapsulate this in a loader component
         load: function(data, name) {
+            this.modal=false;
+            this.resetNotes();
+            if(this.player.playing){
+                this.stop();
+            }
             try {
                 this.SMF = JZZ.MIDI.SMF(data);
                 this.player = this.SMF.player();
@@ -1207,60 +1292,6 @@ proto = new Vue({
                 console.log(e);
                 throw e;
             }
-        },
-        // Loads a Midi File from a file on disk
-        fromFile: function () {
-            if (window.FileReader) {
-                this.clear();
-                var reader = new FileReader();
-                var f = document.getElementById('file').files[0];
-                reader.onload = function(e) {
-                    var data = '';
-                    var bytes = new Uint8Array(e.target.result);
-                    data = bytes.reduce((d,byte) => d+String.fromCharCode(byte),'')
-                    // for (var i = 0; i < bytes.length; i++) {
-                    //     data += String.fromCharCode(bytes[i]);
-                    // }
-                    proto.load(data, f.name);
-                }
-                ;
-                reader.readAsArrayBuffer(f);
-            } else
-                console.log('File API is not supported in this browser.');
-        },
-        // Loads a distant Midi file
-        fromURL: function (url) {
-            if(this.player.playing){
-                this.stop();
-            }
-            //var url = document.getElementById('url').value;
-            try {
-                var xhttp = new XMLHttpRequest();
-                xhttp.onreadystatechange = function() {
-                    if (this.readyState == 4) {
-                        if (this.status == 200) {
-                            var r = xhttp.responseText;
-                            var data = '';
-                            for (var i = 0; i < r.length; i++)
-                                data += String.fromCharCode(r.charCodeAt(i) & 0xff);
-                            proto.load(data, url);
-                        }else{
-                            console.log("Couldn't execute xhttp request.");
-                        }
-                    }
-                }
-                ;
-                xhttp.overrideMimeType('text/plain; charset=x-user-defined');
-                xhttp.open('GET', encodeURIComponent(url), true);
-                xhttp.send();
-            } catch (e) {
-                console.log("Couldn't execute xhttp request.");
-            }
-        },
-        // Loads the preset demo song
-        fromBase64: function () {
-            this.clear();
-            this.load(JZZ.lib.fromBase64(data), 'Base64 data');
         },
         // Loads the recorded midi
         fromTrajectory : function () {

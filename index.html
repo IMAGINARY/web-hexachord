@@ -50,38 +50,19 @@
                 <div class="col-2" v-cloak>
                     <clock-octave v-bind:notes="notes" v-bind:height="400" v-bind:width="400" v-bind:intervals="1"></clock-octave>
                     <clock-octave v-bind:notes="notes" v-bind:height="400" v-bind:width="400" v-bind:intervals="7"></clock-octave>
-                    <!-- <div class="key-selector">
-                        <button v-bind:data-key="note.text" v-for="note in notes" v-on:click="note.count=1-note.count" v-bind:class="{activeNode: note.count>0}">{{ note.text }}</button>
-                    </div> -->
                 </div>
             </div>
 
             <div class="record" v-cloak>
                 <button id=load v-on:click='modal = true'>{{ strings.load }}</button>
-                <button v-if="SMF" id=btn v-on:click='playPause'> {{ player.playing ? strings.pause : strings.play }} </button>
-                <button v-if="player.playing" id=stop @click="stop">{{ strings.stopPlay }}</button>
+                <button v-show="SMF" id=btn v-on:click='playPause'> {{ player.playing ? strings.pause : strings.play }} </button>
+                <button v-show="player.playing" id=stop @click="stop">{{ strings.stopPlay }}</button>
                 <button id=recordButton @click='recordToggle'>{{ recording ? strings.stopRecord : strings.start }}</button>
-                <button v-if="SMF" id=rotate @click='rotate'>{{ strings.rotate }}</button>
-                <button v-if="SMF" id=translate @click='translate(1)'>{{ strings.translate }}</button>
+                <button v-show="SMF" id=rotate @click='rotate'>{{ strings.rotate }}</button>
+                <button v-show="SMF" id=translate @click='translate(1)'>{{ strings.translate }}</button>
                 <!-- <button id=trace @click='traceToggle'>Tracing {{trace ? 'On' : 'Off'}}</button> -->
                 <!-- <button id=reset @click='resetNotes'>Reset</button> -->
-                <div class="modal-background" v-show="modal" v-on:click="modal = false"></div>
-                <div class="modal" v-show="modal">
-                    <!-- <p><input type=file id=file size=40 v-on:change='fromFile(); modal=false'></p>
-                    <hr> -->
-                    <template v-for="song in files">
-                        <button @click="fromURL(song.fileName);modal = false;" class="song-select">
-                            {{song.humanName}}
-                        </button>
-                        <br/>
-                    </template>
-                    <!-- <form v-on:submit.prevent='fromURL(); modal = false; return false;'>
-                        <input type=text id=url value='https://jazz-soft.net/demo/midi/furelise.mid' size=80>
-                        <button type=submit>Load from URL</button>
-                    </form>
-                    <hr>
-                    <p><button v-on:click='fromBase64(); modal = false;'>Base64 Demo</button></p> -->
-                </div>
+                <song-loader v-show="modal" @load="load" @cancel="modal=false" file-browser></song-loader>
             </div>
         </div>
 
