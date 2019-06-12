@@ -26,6 +26,10 @@ fallback.load({
     'JZZ.MIDI.SMF': [
         'https://cdn.jsdelivr.net/npm/jzz-midi-smf',
         '/lib/JZZ/jzz-midi-smf.js'
+    ],
+    GSAP: [
+        'https://cdnjs.cloudflare.com/ajax/libs/gsap/1.18.0/TweenLite.min.js',
+        '/lib/GSAP'
     ]
 },{
     shim:{

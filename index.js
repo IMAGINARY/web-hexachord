@@ -403,8 +403,11 @@ let dragZoomSvg = {
                 return
             }else{
                 //TODO: Animate transition
-                this.tx= - targetPosition.x + this.width/this.scale/2
-                this.ty= - targetPosition.y + this.height/this.scale/2
+                newPos = {
+                    tx:- targetPosition.x + this.width/this.scale/2,
+                    ty:- targetPosition.y + this.height/this.scale/2
+                };
+                TweenLite.to(this,1,newPos);
             }
         }
     },
