@@ -557,6 +557,7 @@ let traceHandler = {
                         this.trajectory.push(node);
                         this.active.push(node);
                         this.visited.add(this.genKey([node]));
+                        this.$parent.$emit('pan',logicalToSvg(node));
                     }else{
                         console.log("Unreachable note")
                     }
