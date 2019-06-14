@@ -8,3 +8,4 @@ curl https://cdn.jsdelivr.net/npm/jzz > lib/JZZ/jzz.js
 curl https://cdn.jsdelivr.net/npm/jzz-synth-tiny > lib/JZZ/JZZ.synth.Tiny.min.js
 curl https://cdn.jsdelivr.net/npm/jzz-input-kbd > lib/JZZ/jzz-input-kbd.js
 curl https://cdn.jsdelivr.net/npm/jzz-midi-smf > lib/JZZ/jzz-midi-smf.js
+curl https://cdnjs.cloudflare.com/ajax/libs/gsap/1.18.0/TweenLite.min.js > lib/GSAP
