@@ -665,7 +665,10 @@ let tonnetzLike = {
         },
         // Converts an array of nodes to an array of the corresponding Midi pitches
         nodesToPitches: function(nodes){
-            return nodes.map(nodeIt => 81-nodeIt.x*this.intervals[0]+nodeIt.y*(this.intervals[2]-12));
+            return nodes.map(nodeIt => {
+                let x = 81-nodeIt.x*this.intervals[0]+nodeIt.y*(this.intervals[2]-12)
+                return Math.max(x,mod(x,12))
+            });
         },
         // Returns the svg transform string corresponding to a node's position
         //TODO: Rename
