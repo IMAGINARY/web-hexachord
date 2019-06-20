@@ -127,6 +127,7 @@ function isMidiPitch(pitch){
     return (pitch >= 0 && pitch < 128) || (JZZ.MIDI.noteValue(pitch) !== undefined);
 }
 
+const noop = function(){};
 
 // ============================================================================
 // Geometry constants and coordinate conversions
@@ -402,7 +403,6 @@ let dragZoomSvg = {
             {
                 return
             }else{
-                //TODO: Animate transition
                 newPos = {
                     tx:- targetPosition.x + this.width/this.scale/2,
                     ty:- targetPosition.y + this.height/this.scale/2
@@ -1167,7 +1167,7 @@ proto = new Vue({
         // The currently loaded Midi file handler
         SMF: undefined,
         // The Midi player provided by JZZ
-        player: {playing:false}, // TODO: replace by a dummy player
+        player: {playing:false, play:noop, pause:noop, stop: noop, resume:noop}, // TODO: replace by a dummy player
         // Should trajectory drawing be active?
         trace: false,
         // Is recording in progress?
