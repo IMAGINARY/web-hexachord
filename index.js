@@ -1182,6 +1182,9 @@ proto = new Vue({
     computed:{
         isConnected: function(){
             return this.intervals.reduce(gcd,12)===1;
+        },
+        complementNotes: function(){
+            return this.notes.map(note => ({text:note.text, count:1-note.count}));
         }
     },
     created: function(){
