@@ -13,10 +13,6 @@ let noteTonnetz = {
         `
 };
 
-
-// Utility functions
-const average = arr => arr.reduce((a,b) => a + b, 0) / arr.length;
-
 // Common code to all chord components
 let chord = {
     mixins: [activableMixin],
@@ -187,14 +183,6 @@ let tonnetzLike = {
                 :forceState="n.status"/>
     </clickToPlayWrapper>`
 };
-
-// Global object to store recording and its state
-//TODO: Make into an true object with methods
-var record = {
-    startTime:undefined,
-    SMF:undefined,
-    recording:false
-}
 
 // Specialisation of tonnetzLike to draw a Tonnetz
 let tonnetzPlan = {

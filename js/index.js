@@ -40,6 +40,15 @@ var piano; //Variable to hold the virtual piano (built later once JZZ is loaded)
 var midiBus; //Variable to hold the bus for upgoing midiEvents (built once Vue is loaded)
 var proto; //Variable to hold the main app Object (built once everything is loaded)
 
+
+// Global object to store recording and its state
+//TODO: Make into an true object with methods
+var record = {
+    startTime:undefined,
+    SMF:undefined,
+    recording:false
+}
+
 // Wait for libraries to be loaded
 fallback.ready(function(){
 
@@ -362,17 +371,5 @@ proto = new Vue({
         midiBus.$on('note-off',this.noteOff);
     }
 })
-
-// Example date : 'Mary had a little lamb'
-var data = '\
-TVRoZAAAAAYAAQADAGRNVHJrAAAAGgD/AwtMaXR0bGUgTGFtYgD/UQMKLCsA/y8ATVRyawAAAPIA/wMF\
-V29yZHMA/wEYQFRNYXJ5IFdhcyBBIExpdHRsZSBMYW1lZP8BA1xNYTL/AQNyeSAy/wEEd2FzIDL/AQJh\
-IDL/AQNsaXQy/wEEdGxlIDL/AQVsYW1lLGT/AQQvTGl0Mv8BBHRsZSAy/wEFbGFtZSxk/wEEL0xpdDL/\
-AQR0bGUgMv8BBWxhbWUsZP8BAy9NYTL/AQNyeSAy/wEEd2FzIDL/AQJhIDL/AQNsaXQy/wEEdGxlIDL/\
-AQVsYW1lLDL/AQMvQSAy/wEDbGl0Mv8BBHRsZSAy/wEFbGFtZSAy/wEEd2FzIDL/AQRoZXIhAP8vAE1U\
-cmsAAAC5AP8DBU11c2ljAMALZJBAfzJAAAA+fzI+AAA8fzI8AAA+fzI+AABAfzJAAABAfzJAAABAf1pA\
-AAo+fzI+AAA+fzI+AAA+f1o+AApAfzJAAABDfzJDAABDf1pDAApAfzJAAAA+fzI+AAA8fzI8AAA+fzI+\
-AABAfzJAAABAfzJAAABAf1pAAAo+fzI+AAA+fzI+AABAfzJAAAA+fzI+AAA8f2RAZABDZABIf1o8AABA\
-AABDAABIAAr/LwA=';
 
 }) // fallback.ready
