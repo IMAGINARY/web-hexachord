@@ -1,0 +1,55 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>The Tonnetz – One Key, Many Representations</title>
+        <link rel="stylesheet" href="index.css">
+        <!-- <link href="https://fonts.googleapis.com/css?family=Quicksand:400,500" rel="stylesheet"> -->
+    </head>
+    <body>
+        <div class=header>
+            <div style="background: #b30469"></div>
+            <div style="background: #822b9b"></div>
+            <div style="background: #5053cd"></div>
+            <div style="background: #1f7aff"></div>
+            <div style="background: #258dab"></div>
+            <div style="background: #2ba058"></div>
+            <div style="background: #31b304"></div>
+            <div style="background: #76a90d"></div>
+            <div style="background: #e6bd00"></div>
+            <div style="background: #ff941f"></div>
+            <div style="background: #e66438"></div>
+            <div style="background: #cc3450"></div>
+        </div>
+
+        <div id="proto" class="columns">
+            <div v-cloak>
+                <clock-octave :notes="notes" :width="500" :height="500" :intervals="1"></clock-octave>
+            </div>
+            <div v-cloak>
+                <clock-octave :notes="notes" :width="500" :height="500" :intervals="2"></clock-octave>
+            </div>
+
+            <div v-cloak>
+                <clock-octave :notes="notes" :width="500" :height="500" :intervals="3"></clock-octave>
+            </div>
+
+            <div v-cloak>
+                <clock-octave :notes="notes" :width="500" :height="500" :intervals="4"></clock-octave>
+            </div>
+
+            <div v-cloak>
+                <clock-octave :notes="notes" :width="500" :height="500" :intervals="5"></clock-octave>
+            </div>
+
+            <div v-cloak>
+                <clock-octave :notes="notes" :width="500" :height="500" :intervals="6"></clock-octave>
+            </div>
+            <div class="piano-wrap"><div id=piano></div></div>
+        </div>
+        <script src="lib/fallback/fallback.min.js"></script>
+        <script src="loadDeps.js"></script>
+        <script src="index.js"></script>
+       
+    </body>
+</html>
