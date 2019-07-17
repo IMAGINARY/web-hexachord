@@ -64,9 +64,11 @@
                 <!-- <button id=reset @click='resetNotes'>Reset</button> -->
                 <song-loader v-show="modal" @load="load" @cancel="modal=false" file-browser></song-loader>
             </div>
+
+
+            <div class="piano-wrap"><piano-keyboard :id="'piano'"></piano-keyboard></div>
         </div>
 
-        <div class="piano-wrap"><div id=piano></div></div>
 
         <script src="lib/fallback/fallback.min.js"></script>
         <script src="loadDeps.js"></script>

@@ -590,6 +590,7 @@ let traceHandler = {
                 }
             }
         },
+        //TODO: Override for events generated from within the Tonnetz (position is known)
         midiDispatch: function(midiEvent){
             if(this.trace){
                 let index = record.length       
@@ -600,12 +601,6 @@ let traceHandler = {
                 }
             }
         }
-    },
-    mounted(){
-        //TODO: Override for events generated from within the Tonnetz (position is known)
-        midiBus.midiThru.connect(this.midiDispatch);
-        // midiBus.$on('note-on',this.addToTrajectory);
-        // midiBus.$on('note-off',this.removeActive);
     }
 }
 
@@ -1070,37 +1065,54 @@ let songLoader = {
     `
 }
 
+let pianoKeyboard = {
+    props:{
+        id:{
+            type:String,
+            default: 'piano'
+        },
+        keybinds:{
+            type:Boolean,
+            default: false
+        }
+    },
+    template: `
+        <div :id="id">
+        </div>
+    `,
+    mounted: function(){
+        piano = JZZ.input.Kbd(
+            {
+                at:this.id, 
+                from:'C3', 
+                to:'B7', 
+                onCreate:function() {
+                    this.getBlackKeys().setStyle({color:'#fff'});
+
+                    if(this.keybinds){
+                    //TODO: probe keyboard layout instead of static keybinds
+                    this.getKey('C5').setInnerHTML('<span class=inner>W</span>');
+                    this.getKey('C#5').setInnerHTML('<span class=inner>S</span>');
+                    this.getKey('D5').setInnerHTML('<span class=inner>X</span>');
+                    this.getKey('D#5').setInnerHTML('<span class=inner>D</span>');
+                    this.getKey('E5').setInnerHTML('<span class=inner>C</span>');
+                    this.getKey('F5').setInnerHTML('<span class=inner>V</span>');
+                    this.getKey('F#5').setInnerHTML('<span class=inner>G</span>');
+                    this.getKey('G5').setInnerHTML('<span class=inner>B</span>');
+                    this.getKey('G#5').setInnerHTML('<span class=inner>H</span>');
+                    this.getKey('A5').setInnerHTML('<span class=inner>N</span>');
+                    this.getKey('A#5').setInnerHTML('<span class=inner>J</span>');
+                    }
+                }
+            });
+        midiBus.midiThru.connect(piano);
+        piano.connect(midiBus.midiThru);
+    }
+}
+
 // Wait for libraries to be loaded
 fallback.ready(function(){
 
-    // ============================================================================
-// Create the virtual keyboard
-
-//TODO: Make a Vue component to encapsulate it 
-//TODO: Use an independent bus to connect the Midi pipeline (removing the piano breaks the app)
-piano = JZZ.input.Kbd(
-{
-    at:'piano', 
-    from:'C3', 
-    to:'B7', 
-    onCreate:function() {
-        this.getBlackKeys().setStyle({color:'#fff'});
-    // Uncomment to add keybind hints (azerty layout)
-    //TODO: handle this as a Vue component option
-    //TODO: probe keyboard layout instead of static keybind
-    // this.getKey('C5').setInnerHTML('<span class=inner>W</span>');
-    // this.getKey('C#5').setInnerHTML('<span class=inner>S</span>');
-    // this.getKey('D5').setInnerHTML('<span class=inner>X</span>');
-    // this.getKey('D#5').setInnerHTML('<span class=inner>D</span>');
-    // this.getKey('E5').setInnerHTML('<span class=inner>C</span>');
-    // this.getKey('F5').setInnerHTML('<span class=inner>V</span>');
-    // this.getKey('F#5').setInnerHTML('<span class=inner>G</span>');
-    // this.getKey('G5').setInnerHTML('<span class=inner>B</span>');
-    // this.getKey('G#5').setInnerHTML('<span class=inner>H</span>');
-    // this.getKey('A5').setInnerHTML('<span class=inner>N</span>');
-    // this.getKey('A#5').setInnerHTML('<span class=inner>J</span>');
-    }
-});
 
 // Empty Vue instance to act as a bus for note interaction Events
 midiBus=new Vue({
@@ -1113,11 +1125,13 @@ midiBus=new Vue({
 });
 
 
+
+
 // The App's main object, handling global concerns
 proto = new Vue({
     //TODO: break up some functions into separate components
     el: '#proto',
-    components: {dragZoomSvg,tonnetzPlan,chickenWire,clockOctave,songLoader},
+    components: {dragZoomSvg,tonnetzPlan,chickenWire,clockOctave,songLoader,pianoKeyboard},
     data: {
         // The list of all 3-interval Tonnetze
         //TODO: Move to non-reactive data
@@ -1201,7 +1215,6 @@ proto = new Vue({
         JZZ().onChange(this.deviceUpdate);
         
         this.ascii.connect(midiBus.midiThru);
-        midiBus.midiThru.connect(piano);
         midiBus.midiThru.connect(this.synth);
         midiBus.midiThru.connect(this.midiHandler);   
     },
