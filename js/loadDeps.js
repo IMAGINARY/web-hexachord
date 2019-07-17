@@ -4,7 +4,7 @@ First attempt to retrieve them online, otherwise load local copies */
 fallback.load({
     //Vue: Main framework for reactive elements
     Vue: [
-        'https://cdn.jsdelivr.net/npm/vue/dist/vue.min.js',
+        'https://cdn.jsdelivr.net/npm/vue/dist/vue.js',
         '/lib/Vue/vue.min.js'
     ],
     //JZZ: Midi library
@@ -30,6 +30,33 @@ fallback.load({
     GSAP: [
         'https://cdnjs.cloudflare.com/ajax/libs/gsap/1.18.0/TweenLite.min.js',
         '/lib/GSAP'
+    ],
+    'Tonnetz.utils':[
+        '/js/utils.js'
+    ],
+    'Tonnetz.l12n':[
+        '/js/l12n.js'
+    ],
+    'Tonnetz.clickMixins':[
+        'js/mixins/clickMixins.js'
+    ],
+    'Tonnetz.trajectory':[
+        'js/mixins/trajectory.js'
+    ],
+    'Tonnetz.dragZoom':[
+        'js/decorators/dragZoom.js'
+    ],
+    'Tonnetz.piano':[
+        'js/components/pianoKeyboard.js'
+    ],
+    'Tonnetz.loader':[
+        'js/components/songLoader.js'
+    ],
+    'Tonnetz.tonnetzLike':[
+        'js/components/tonnetzLike.js'
+    ],
+    'Tonnetz.clockOctave':[
+        'js/components/clockOctave.js'
     ]
 },{
     shim:{
