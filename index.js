@@ -4,6 +4,8 @@
 // Vue.config.performance = true
 
 
+//TODO: Add credit info, with paper to cite
+
 // ============================================================================
 // i18n Strings
 
@@ -601,7 +603,7 @@ let traceHandler = {
     },
     mounted(){
         //TODO: Override for events generated from within the Tonnetz (position is known)
-        piano.connect(this.midiDispatch);
+        midiBus.midiThru.connect(this.midiDispatch);
         // midiBus.$on('note-on',this.addToTrajectory);
         // midiBus.$on('note-off',this.removeActive);
     }
@@ -959,7 +961,6 @@ let clockOctave = {
                 v-bind:notes="node2Notes([n])"
                 />
             </clickToPlayWrapper>
-            
         </svg>
     `
 }
@@ -1069,7 +1070,6 @@ let songLoader = {
     `
 }
 
-
 // Wait for libraries to be loaded
 fallback.ready(function(){
 
@@ -1102,9 +1102,15 @@ piano = JZZ.input.Kbd(
     }
 });
 
-
 // Empty Vue instance to act as a bus for note interaction Events
-midiBus=new Vue({});
+midiBus=new Vue({
+    data: {
+        midiThru: JZZ.Widget()
+    },
+    methods:{
+        connect: output => this.midiThru.connect(output)
+    }
+});
 
 
 // The App's main object, handling global concerns
@@ -1193,10 +1199,11 @@ proto = new Vue({
         setTimeout(function(){deviceUpdate({inputs:{added:JZZ().info().inputs}})},1000);
         //Add a watcher to connect (and disconnect) new devices to the app
         JZZ().onChange(this.deviceUpdate);
-
-        this.ascii.connect(piano);
-        piano.connect(this.synth);
-        piano.connect(this.midiHandler);   
+        
+        this.ascii.connect(midiBus.midiThru);
+        midiBus.midiThru.connect(piano);
+        midiBus.midiThru.connect(this.synth);
+        midiBus.midiThru.connect(this.midiHandler);   
     },
     methods:{
         //Handler for JZZ device change event
@@ -1206,14 +1213,14 @@ proto = new Vue({
             if(added){
                 for(device of added){
                     JZZ().openMidiIn(device.name)
-                      .connect(piano) // Send the keyboard's events to the virtual piano which will relay them
+                      .connect(midiBus.midiThru) // Send the keyboard's events to the midi bus which will relay them
                       .connect(restartTimeout); // Reset the page's timeout upon input
                     console.log('Added device: ',device);
                 }
             }
             if(removed){
                 for(device of removed){
-                    JZZ().openMidiIn(device.name).disconnect(piano);
+                    JZZ().openMidiIn(device.name).disconnect(midiBus.midiThru);
                     console.log('Removed device: ',device);
                 }
             }
@@ -1292,7 +1299,7 @@ proto = new Vue({
             try {
                 this.SMF = JZZ.MIDI.SMF(data);
                 this.player = this.SMF.player();
-                this.player.connect(piano);
+                this.player.connect(midiBus.midiThru);
                 this.player.play();
             } catch (e) {
                 console.log(e);
@@ -1307,7 +1314,7 @@ proto = new Vue({
             }
             this.SMF=record.SMF;
             this.player = record.SMF.player();
-            this.player.connect(piano);
+            this.player.connect(midiBus.midiThru);
             this.resetNotes();
         },
         //TODO: Fix 0.5 s slowdown
@@ -1316,7 +1323,7 @@ proto = new Vue({
             this.rotateTrajectory(this.SMF);
             // TODO: Does the player really need to be reassigned ?
             this.player=this.SMF.player();
-            this.player.connect(piano);
+            this.player.connect(midiBus.midiThru);
 
             this.player.play();
         },
@@ -1326,7 +1333,7 @@ proto = new Vue({
             this.translateTrajectory(this.SMF,translate);
             // TODO: Does the player really need to be reassigned ?
             this.player=this.SMF.player();
-            this.player.connect(piano);
+            this.player.connect(midiBus.midiThru);
 
             this.player.play();
         },
@@ -1369,13 +1376,13 @@ proto = new Vue({
         noteOn: function(pitches){
             //var notes = this.node2Notes(nodes);
             for (var pitch of pitches){
-                piano.noteOn(0,pitch,100);
+                midiBus.midiThru.noteOn(0,pitch,100);
             }
         },
         noteOff: function(pitches){
             //var notes = this.node2Notes(nodes);
             for (var pitch of pitches){
-                piano.noteOff(0,pitch,100);
+                midiBus.midiThru.noteOff(0,pitch,100);
             }
         },
         // Toggles recording and performs setup and unwinding of the recording
