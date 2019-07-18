@@ -40,7 +40,7 @@
                     
                     <div class="button-row">
                     	<div class="options">
-    	                    <button v-for="tonnetz in tonnetze" v-on:click="intervals=tonnetz" v-bind:class="{active:arrayEquals(tonnetz,intervals)}">{{ tonnetz.join(', ') }}</button>
+    	                    <button v-for="tonnetz in tonnetze" v-on:click="intervals=tonnetz" v-bind:class="{active:tonnetz==intervals}">{{ tonnetz.join(', ') }}</button>
     	                </div>
                     	<button v-on:click="type=(type === 'tonnetz' ? 'chicken' : 'tonnetz')" v-bind:class="{active: type=='chicken'}">{{ strings.dual }}</button>
                     </div>

@@ -37,8 +37,9 @@ const logicalToSvg = node => ({x:logicalToSvgX(node), y:logicalToSvgY(node)})
 
 //TODO: Restructure to avoid having to forward declare it.
 var piano; //Variable to hold the virtual piano (built later once JZZ is loaded)
-var midiBus; //Variable to hold the bus for upgoing midiEvents (built once Vue is loaded)
+//var midiBus; //Variable to hold the bus for upgoing midiEvents (built once Vue is loaded)
 var proto; //Variable to hold the main app Object (built once everything is loaded)
+
 
 
 // Global object to store recording and its state
@@ -52,29 +53,7 @@ var record = {
 // Wait for libraries to be loaded
 fallback.ready(function(){
 
-
-// Empty Vue instance to act as a bus for note interaction Events
-midiBus=new Vue({
-    data: {
-        midiThru: JZZ.Widget()
-    },
-    methods:{
-        connect: output => this.midiThru.connect(output)
-    }
-});
-
-
-
-
-// The App's main object, handling global concerns
-proto = new Vue({
-    //TODO: break up some functions into separate components
-    el: '#proto',
-    components: {dragZoomSvg,tonnetzPlan,chickenWire,clockOctave,songLoader,pianoKeyboard},
-    data: {
-        // The list of all 3-interval Tonnetze
-        //TODO: Move to non-reactive data
-        tonnetze: [
+let tonnetze3 = [
             [1,1,10],
             [1,2,9],
             [1,3,8],
@@ -87,9 +66,19 @@ proto = new Vue({
             [3,4,5],
             [3,3,6],
             [4,4,4]
-        ],
+];
+
+// The App's main object, handling global concerns
+proto = new Vue({
+    //TODO: break up some functions into separate components
+    el: '#proto',
+    components: {dragZoomSvg,tonnetzPlan,chickenWire,clockOctave,songLoader,pianoKeyboard,playRecorder},
+    data: {
+        // The list of all 3-interval Tonnetze
+        //TODO: Move to non-reactive data
+        tonnetze: tonnetze3,
         // The selected interval set
-        intervals: [3,4,5],
+        intervals: tonnetze3[9],
         // The type of representation for the main window ('tonnetz' or 'chicken')
         type: 'tonnetz',
         // The list of all notes: their name and their status
@@ -178,18 +167,7 @@ proto = new Vue({
             }
             this.resetNotes(); // Connection/Disconnection can cause unbalanced note events
         },
-        //Deep compare for arrays
-        //TODO: Move to utils
-        arrayEquals: function (a, b) {
-            if (a === b) return true;
-            if (a == null || b == null) return false;
-            if (a.length != b.length) return false;
         
-            for (var i = 0; i < a.length; ++i) {
-              if (a[i] !== b[i]) return false;
-            }
-            return true;
-        },
         //Handler for Midi events coming from JZZ
         midiHandler: function (midiEvent){
             noteIndex = (midiEvent.getNote()+3) %12
@@ -367,8 +345,14 @@ proto = new Vue({
         }
     },
     mounted(){
+        //Handle midiBus events
         midiBus.$on('note-on',this.noteOn);
         midiBus.$on('note-off',this.noteOff);
+
+        //Connect the Midi
+        this.ascii.connect(midiBus.midiThru);
+        midiBus.midiThru.connect(this.synth);
+        midiBus.midiThru.connect(this.midiHandler);   
     }
 })
 
