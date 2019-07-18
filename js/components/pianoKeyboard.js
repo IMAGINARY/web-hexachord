@@ -46,3 +46,5 @@ let pianoKeyboard = {
         piano.connect(midiBus.midiThru);
     }
 }
+
+var Tonnetz_piano = true

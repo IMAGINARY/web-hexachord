@@ -127,3 +127,5 @@ let dragZoomSvg = {
         </svg>
     `
 }
+
+var Tonnetz_dragZoom = true

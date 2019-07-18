@@ -1,3 +1,4 @@
+
 // Note component : a clickable circle with the note name
 let noteTonnetz = {
     mixins: [activableMixin],
@@ -316,3 +317,5 @@ let chickenWire = {
         </g>
     `
 }
+
+var Tonnetz_tonnetzLike = true

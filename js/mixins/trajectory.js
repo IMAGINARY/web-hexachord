@@ -169,3 +169,5 @@ let traceHandler = {
         }
     }
 }
+
+var Tonnetz_trajectory = true

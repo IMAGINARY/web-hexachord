@@ -51,3 +51,5 @@ const strings = {
     connected: "Ce Tonnetz n'est pas connexe et ne contient pas toutes les notes."
   }
 }
+
+var Tonnetz_l12n = true

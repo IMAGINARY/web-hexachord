@@ -102,3 +102,5 @@ let clockOctave = {
         </svg>
     `
 }
+
+var Tonnetz_clockOctave = true

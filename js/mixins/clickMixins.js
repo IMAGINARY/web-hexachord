@@ -71,3 +71,5 @@ var activableMixin = {
         }
     }
 }
+
+var Tonnetz_mixins = true

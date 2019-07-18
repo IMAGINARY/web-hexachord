@@ -27,43 +27,52 @@ fallback.load({
         'https://cdn.jsdelivr.net/npm/jzz-midi-smf',
         '/lib/JZZ/jzz-midi-smf.js'
     ],
-    GSAP: [
+    TweenLite: [
         'https://cdnjs.cloudflare.com/ajax/libs/gsap/1.18.0/TweenLite.min.js',
         '/lib/GSAP'
     ],
-    'Tonnetz.utils':[
+    //TODO: Use proper submodule structure
+    // Tonnetz submodules
+    // Small hack: these variables are defined to let fallback know that the module loaded
+    'Tonnetz_utils':[
         '/js/utils.js'
     ],
-    'Tonnetz.l12n':[
+    'Tonnetz_l12n':[
         '/js/l12n.js'
     ],
-    'Tonnetz.clickMixins':[
+    'Tonnetz_mixins':[
         'js/mixins/clickMixins.js'
     ],
-    'Tonnetz.trajectory':[
+    'Tonnetz_trajectory':[
         'js/mixins/trajectory.js'
     ],
-    'Tonnetz.dragZoom':[
+    'Tonnetz_dragZoom':[
         'js/decorators/dragZoom.js'
     ],
-    'Tonnetz.piano':[
+    'Tonnetz_piano':[
         'js/components/pianoKeyboard.js'
     ],
-    'Tonnetz.loader':[
+    'Tonnetz_loader':[
         'js/components/songLoader.js'
     ],
-    'Tonnetz.tonnetzLike':[
+    'Tonnetz_tonnetzLike':[
         'js/components/tonnetzLike.js'
     ],
-    'Tonnetz.clockOctave':[
+    'Tonnetz_clockOctave':[
         'js/components/clockOctave.js'
+    ],
+    'Tonnetz_midiBus':[
+        'js/midiBus.js'
     ]
 },{
     shim:{
         // Wait for JZZ to be loaded before loading its submodules
         'JZZ.synth.Tiny': ['JZZ'],
         'JZZ.input.Kbd': ['JZZ'],
-        'JZZ.MIDI.SMF': ['JZZ']
+        'JZZ.MIDI.SMF': ['JZZ'],
+        'Tonnetz_tonnetzLike': ['Tonnetz_mixins'],
+        'Tonnetz_clockOctave': ['Tonnetz_mixins'],
+        'Tonnetz_midiBus': ['Vue','JZZ']
     }
 }
 )
