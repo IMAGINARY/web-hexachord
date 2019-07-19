@@ -61,6 +61,9 @@ fallback.load({
     'Tonnetz_clockOctave':[
         'js/components/clockOctave.js'
     ],
+    'Tonnetz_playRecorder':[
+        'js/components/playRecorder.js'
+    ],
     'Tonnetz_midiBus':[
         'js/midiBus.js'
     ]
@@ -72,6 +75,7 @@ fallback.load({
         'JZZ.MIDI.SMF': ['JZZ'],
         'Tonnetz_tonnetzLike': ['Tonnetz_mixins'],
         'Tonnetz_clockOctave': ['Tonnetz_mixins'],
+        'Tonnetz_playRecorder': ['Tonnetz_midiBus', 'Tonnetz_loader','Tonnetz_utils'],
         'Tonnetz_midiBus': ['Vue','JZZ']
     }
 }

@@ -4,7 +4,9 @@ var midiBus=new Vue({
         midiThru:JZZ.Widget()
     }},
     methods:{
-        connect: output => this.midiThru.connect(output)
+        connect: function(output){
+            this.midiThru.connect(output)
+        }
     }
 });
 

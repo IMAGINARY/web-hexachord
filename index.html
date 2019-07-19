@@ -52,25 +52,14 @@
                     <clock-octave v-bind:notes="notes" v-bind:height="400" v-bind:width="400" v-bind:intervals="7"></clock-octave>
                 </div>
             </div>
-
-            <div class="record" v-cloak>
-                <button id=load v-on:click='modal = true'>{{ strings.load }}</button>
-                <button v-show="SMF" id=btn v-on:click='playPause'> {{ player.playing ? strings.pause : strings.play }} </button>
-                <button v-show="player.playing" id=stop @click="stop">{{ strings.stopPlay }}</button>
-                <button id=recordButton @click='recordToggle'>{{ recording ? strings.stopRecord : strings.start }}</button>
-                <button v-show="SMF" id=rotate @click='rotate'>{{ strings.rotate }}</button>
-                <button v-show="SMF" id=translate @click='translate(1)'>{{ strings.translate }}</button>
-                <!-- <button id=trace @click='traceToggle'>Tracing {{trace ? 'On' : 'Off'}}</button> -->
-                <!-- <button id=reset @click='resetNotes'>Reset</button> -->
-                <song-loader v-show="modal" @load="load" @cancel="modal=false" file-browser></song-loader>
-            </div>
+            <play-recorder @reset-notes="resetNotes"></play-recorder>
 
 
             <div class="piano-wrap"><piano-keyboard :id="'piano'"></piano-keyboard></div>
         </div>
 
 
-        <script src="lib/fallback/fallback.min.js"></script>
+        <script src="lib/fallback/fallback.js"></script>
         <script src="js/loadDeps.js"></script>
         <script src="js/index.js"></script>
        

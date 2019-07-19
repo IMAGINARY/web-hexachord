@@ -54,18 +54,18 @@ var record = {
 fallback.ready(function(){
 
 let tonnetze3 = [
-            [1,1,10],
-            [1,2,9],
-            [1,3,8],
-            [1,4,7],
-            [1,5,6],
-            [2,2,8],
-            [2,3,7],
-            [2,4,6],
-            [2,5,5],
-            [3,4,5],
-            [3,3,6],
-            [4,4,4]
+    [1,1,10],
+    [1,2,9],
+    [1,3,8],
+    [1,4,7],
+    [1,5,6],
+    [2,2,8],
+    [2,3,7],
+    [2,4,6],
+    [2,5,5],
+    [3,4,5],
+    [3,3,6],
+    [4,4,4]
 ];
 
 // The App's main object, handling global concerns
@@ -112,16 +112,8 @@ proto = new Vue({
                 G:'F#5', B:'G5', H:'Ab5', N:'A5', J:'Bb5', M:'B5'
                 }),
         
-        // The currently loaded Midi file handler
-        SMF: undefined,
-        // The Midi player provided by JZZ
-        player: {playing:false, play:noop, pause:noop, stop: noop, resume:noop}, // TODO: replace by a dummy player
         // Should trajectory drawing be active?
         trace: false,
-        // Is recording in progress?
-        recording: false,
-        // Is the modal window open?
-        modal: false,
         // The localisation strings
         allStrings: strings,
         // The picked locale
@@ -141,10 +133,6 @@ proto = new Vue({
         setTimeout(function(){deviceUpdate({inputs:{added:JZZ().info().inputs}})},1000);
         //Add a watcher to connect (and disconnect) new devices to the app
         JZZ().onChange(this.deviceUpdate);
-        
-        this.ascii.connect(midiBus.midiThru);
-        midiBus.midiThru.connect(this.synth);
-        midiBus.midiThru.connect(this.midiHandler);   
     },
     methods:{
         //Handler for JZZ device change event
@@ -180,35 +168,6 @@ proto = new Vue({
                     console.log('Warning: ignored unbalanced noteOff event', midiEvent);
                 }
             }
-            if(record.recording){
-                if(midiEvent.isNoteOn()){
-                    record.SMF[0].add(new Date().getTime()-record.startTime,JZZ.MIDI.noteOn(midiEvent.getChannel(),midiEvent.getNote(),midiEvent[2]))
-                }else if(midiEvent.isNoteOff()){
-                    record.SMF[0].add(new Date().getTime()-record.startTime,JZZ.MIDI.noteOff(midiEvent.getChannel(),midiEvent.getNote()));
-                }else if(midiEvent.ff!==0x51){ // Ignore tempo events which mess with timing
-                    record.SMF[0].add(new Date().getTime()-record.startTime,midiEvent);
-                }
-            }
-        },
-        //Toggles playback
-        playPause: function() {
-            if (this.player.playing) {
-                this.player.pause();
-            }else if(this.player.paused){
-                this.player.resume();
-            }else{
-                this.resetNotes();
-                this.player.play();
-            }
-        },
-        // Stops playback
-        stop: function(){
-            if(this.player){
-                this.player.stop(); 
-            }
-            setTimeout(this.resetNotes,10); // Reset in a timer in case some timers could not be cleared
-            //This can occur when some events'handling are queued behind this function
-            //TODO: Find if there is a way to clear queued events to handle this more cleanly
         },
         resetNotes: function(){
             for (note of this.notes){
@@ -217,90 +176,6 @@ proto = new Vue({
         },
         traceToggle: function(){
             this.trace = !this.trace;
-        },
-        // Loads a Midi File from its byte representation
-        //TODO: encapsulate this in a loader component
-        load: function(data, name) {
-            this.modal=false;
-            this.resetNotes();
-            if(this.player.playing){
-                this.stop();
-            }
-            try {
-                this.SMF = JZZ.MIDI.SMF(data);
-                this.player = this.SMF.player();
-                this.player.connect(midiBus.midiThru);
-                this.player.play();
-            } catch (e) {
-                console.log(e);
-                throw e;
-            }
-        },
-        // Loads the recorded midi
-        fromTrajectory : function () {
-            //Stop playback to avoid overlapping
-            if(this.player.playing){
-                this.stop();
-            }
-            this.SMF=record.SMF;
-            this.player = record.SMF.player();
-            this.player.connect(midiBus.midiThru);
-            this.resetNotes();
-        },
-        //TODO: Fix 0.5 s slowdown
-        rotate: function(){
-            this.stop()
-            this.rotateTrajectory(this.SMF);
-            // TODO: Does the player really need to be reassigned ?
-            this.player=this.SMF.player();
-            this.player.connect(midiBus.midiThru);
-
-            this.player.play();
-        },
-        //TODO: Fix 0.5 s slowdown
-        translate: function(translate=1){
-            this.stop()
-            this.translateTrajectory(this.SMF,translate);
-            // TODO: Does the player really need to be reassigned ?
-            this.player=this.SMF.player();
-            this.player.connect(midiBus.midiThru);
-
-            this.player.play();
-        },
-        //Simple version operating on pitches alone
-        rotateTrajectory : function (SMF) {
-            for (SMFTrack of SMF){
-                //TODO: ignore drums track since midi pitch has a different meaning there
-                let symmetryCenter = undefined;
-                for (SME of SMFTrack){
-                    let note = SME.getNote();
-                    if(note !== undefined){
-                        if (symmetryCenter === undefined){
-                            symmetryCenter = note;
-                        }else{
-                            noteIntervalClass = mod(2*(symmetryCenter - note),12)
-                            // If the interval is a fifth or more, take the descending interval instead
-                            if(noteIntervalClass > 6){  
-                                note += noteIntervalClass-12
-                            }else{
-                                note += noteIntervalClass
-                            }
-                        }
-                        SME.setNote(note);
-                    }
-                }
-            }
-        },
-        // Transposes a recording by a given number of semitones
-        translateTrajectory : function (SMF,translate) {
-            for (SMFTrack of SMF){
-                for (SME of SMFTrack){
-                    let note = SME.getNote();
-                    if(note !== undefined){
-                        SME.setNote(note+translate);
-                    }
-                }
-            }
         },
         // Handlers for playback events fired from the app
         noteOn: function(pitches){
@@ -313,23 +188,6 @@ proto = new Vue({
             //var notes = this.node2Notes(nodes);
             for (var pitch of pitches){
                 midiBus.midiThru.noteOff(0,pitch,100);
-            }
-        },
-        // Toggles recording and performs setup and unwinding of the recording
-        recordToggle: function(){
-            if(this.recording){
-                this.recording = false;
-                record.SMF[0].add(new Date().getTime() - record.startTime,JZZ.MIDI.smfEndOfTrack());
-                record.recording = false;
-                this.stop();
-                this.fromTrajectory();
-            }else{
-                this.recording = true;
-                record.SMF = new JZZ.MIDI.SMF(0,500); // 500 tpb, 120 bpm => 1 tick per millisecond
-                record.SMF.push(new JZZ.MIDI.SMF.MTrk());
-                record.SMF[0].add(0,JZZ.MIDI.smfBPM(120));
-                record.startTime = new Date().getTime();
-                record.recording = true;
             }
         },
         // Hard reset for the whole page
