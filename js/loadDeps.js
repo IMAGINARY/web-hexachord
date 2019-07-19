@@ -66,6 +66,9 @@ fallback.load({
     ],
     'Tonnetz_midiBus':[
         'js/midiBus.js'
+    ],
+    'Tonnetz_tonnetzView':[
+        'js/components/tonnetzView.js'
     ]
 },{
     shim:{
@@ -76,7 +79,8 @@ fallback.load({
         'Tonnetz_tonnetzLike': ['Tonnetz_mixins'],
         'Tonnetz_clockOctave': ['Tonnetz_mixins'],
         'Tonnetz_playRecorder': ['Tonnetz_midiBus', 'Tonnetz_loader','Tonnetz_utils'],
-        'Tonnetz_midiBus': ['Vue','JZZ']
+        'Tonnetz_midiBus': ['Vue','JZZ'],
+        'Tonnetz_tonnetzView': ['Tonnetz_tonnetzLike']
     }
 }
 )

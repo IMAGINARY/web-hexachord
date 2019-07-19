@@ -31,20 +31,7 @@
 
             <div class="columns">
                 <div class="col-1" v-cloak>
-                    <drag-zoom-svg v-bind:height="600" v-bind:width="1000" lock>
-                        <template v-slot="slotProps">
-                            <tonnetz-plan v-if="type=='tonnetz'" v-bind:notes="notes" v-bind:intervals="intervals" :bounds="slotProps.bounds" :trace="trace"></tonnetz-plan>
-                            <chicken-wire v-else v-bind:notes="notes" :bounds="slotProps.bounds" v-bind:intervals="intervals" :trace="trace"></chicken-wire>
-                        </template>
-                    </drag-zoom-svg>
-                    
-                    <div class="button-row">
-                    	<div class="options">
-    	                    <button v-for="tonnetz in tonnetze" v-on:click="intervals=tonnetz" v-bind:class="{active:tonnetz==intervals}">{{ tonnetz.join(', ') }}</button>
-    	                </div>
-                    	<button v-on:click="type=(type === 'tonnetz' ? 'chicken' : 'tonnetz')" v-bind:class="{active: type=='chicken'}">{{ strings.dual }}</button>
-                    </div>
-                    <p class="warning" :style="isConnected ? {visibility:'hidden'} : {}">{{ strings.connected }}</p>
+                    <tonnetz-view :notes="notes"></tonnetz-view>
                 </div>
 
                 <div class="col-2" v-cloak>

@@ -53,26 +53,11 @@ var record = {
 // Wait for libraries to be loaded
 fallback.ready(function(){
 
-let tonnetze3 = [
-    [1,1,10],
-    [1,2,9],
-    [1,3,8],
-    [1,4,7],
-    [1,5,6],
-    [2,2,8],
-    [2,3,7],
-    [2,4,6],
-    [2,5,5],
-    [3,4,5],
-    [3,3,6],
-    [4,4,4]
-];
-
 // The App's main object, handling global concerns
 proto = new Vue({
     //TODO: break up some functions into separate components
     el: '#proto',
-    components: {dragZoomSvg,tonnetzPlan,chickenWire,clockOctave,songLoader,pianoKeyboard,playRecorder},
+    components: {dragZoomSvg,tonnetzPlan,chickenWire,clockOctave,songLoader,pianoKeyboard,playRecorder,tonnetzView},
     data: {
         // The list of all 3-interval Tonnetze
         //TODO: Move to non-reactive data
@@ -120,9 +105,6 @@ proto = new Vue({
         strings: strings[language] || strings.en
     },
     computed:{
-        isConnected: function(){
-            return this.intervals.reduce(gcd,12)===1;
-        },
         complementNotes: function(){
             return this.notes.map(note => ({text:note.text, count:1-note.count}));
         }
