@@ -52,4 +52,24 @@ const strings = {
   }
 }
 
+let languageSelector = {
+    props:{
+        value:{
+            type:String
+        },
+        languages:{
+            type:Array,
+            required:true
+        }
+    },
+    template:`
+        <div class="languageSwitcher">
+            <div v-cloak v-for="lang of languages" 
+            @click="$emit('input',lang)">
+                {{ lang }}
+            </div>
+        </div>
+    `
+}
+
 var Tonnetz_l12n = true

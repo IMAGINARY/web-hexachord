@@ -11,10 +11,12 @@ let playRecorder = {
         modal: false,
         startTime:undefined,
         SMF:undefined,
-        recording:false,
-        //TODO: This won't update if we change the root's locale
-        strings: this.$root.strings
+        recording:false
     }},
+    computed:{
+        // TODO: cleaner access to localisation strings
+        strings: function(){return this.$root.strings}
+    },
     methods:{
         resetNotes: function(){
             this.$emit('reset-notes');

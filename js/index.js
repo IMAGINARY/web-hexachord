@@ -57,7 +57,7 @@ fallback.ready(function(){
 proto = new Vue({
     //TODO: break up some functions into separate components
     el: '#proto',
-    components: {dragZoomSvg,tonnetzPlan,chickenWire,clockOctave,songLoader,pianoKeyboard,playRecorder,tonnetzView},
+    components: {clockOctave,songLoader,pianoKeyboard,playRecorder,tonnetzView,languageSelector},
     data: {
         // The list of all 3-interval Tonnetze
         //TODO: Move to non-reactive data
@@ -102,11 +102,14 @@ proto = new Vue({
         // The localisation strings
         allStrings: strings,
         // The picked locale
-        strings: strings[language] || strings.en
+        language: language || en
     },
     computed:{
         complementNotes: function(){
             return this.notes.map(note => ({text:note.text, count:1-note.count}));
+        },
+        strings: function(){
+            return strings[this.language]
         }
     },
     created: function(){
