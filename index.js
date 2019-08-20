@@ -26,7 +26,8 @@ const strings = {
     pause: 'Pause',
     rotate: 'Rotate 180°',
     translate: 'Translate',
-    connected: 'This Tonnetz is non-connected and doesn’t contain every note.'
+    connected: 'This Tonnetz is non-connected and doesn’t contain every note.',
+    notes: ['A', 'Bb', 'B', 'C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab']
   },
   de: {
     title: 'Das Tonnetz',
@@ -41,7 +42,8 @@ const strings = {
     pause: 'Pause',
     rotate: '180° Rotieren',
     translate: 'Verschieben',
-    connected: 'Dieses Tonnetz ist nicht verbunden, und enthält nicht alle Noten.'
+    connected: 'Dieses Tonnetz ist nicht verbunden, und enthält nicht alle Noten.',
+    notes: ['A', 'Bb', 'B', 'C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab']
   },
   fr: {
     title: 'Le Tonnetz',
@@ -56,7 +58,24 @@ const strings = {
     pause: 'Pause',
     rotate: 'Rotation à 180°',
     translate: 'Translation',
-    connected: "Ce Tonnetz n'est pas connexe et ne contient pas toutes les notes."
+    connected: "Ce Tonnetz n'est pas connexe et ne contient pas toutes les notes.",
+    notes: ['A', 'Bb', 'B', 'C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab']
+  },
+  hi: {
+    title: 'सरगम',
+    subtitle: 'एक स्वर, रूप अनेक',
+    dual: 'Dual',
+    reset: 'Reset',
+    load: 'मिडी फाइल खोलें',
+    start: 'रिकॉर्डिंग शुरू करें',
+    stopRecord: 'रिकॉर्डिंग ख़त्म करें',
+    play: '▶️ Play',
+    stopPlay: '⏹ Stop Playing',
+    pause: '⏸ Pause',
+    rotate: '180° पलटें',
+    translate: 'अनुवाद करें',
+    connected: 'इस जोड़ में सभी स्वर नहीं है.',
+    notes: ['ध', 'निb', 'नि', 'सा', 'रेb', 'रे', 'गb', 'ग', 'म', 'पb', 'प', 'धb']
   }
 }
 
@@ -1064,20 +1083,8 @@ var proto = new Vue({
         // The type of representation for the main window ('tonnetz' or 'chicken')
         type: 'tonnetz',
         // The list of all notes: their name and their status
-        notes: [
-            {text: 'A',  count:0},
-            {text: 'Bb', count:0},
-            {text: 'B',  count:0},
-            {text: 'C',  count:0},
-            {text: 'Db', count:0},
-            {text: 'D',  count:0},
-            {text: 'Eb', count:0},
-            {text: 'E',  count:0},
-            {text: 'F',  count:0},
-            {text: 'Gb', count:0},
-            {text: 'G',  count:0},
-            {text: 'Ab', count:0}
-        ],
+        notes: (strings[language] || strings.en).notes.map(s => { return {text: s, count: 0}; }),
+
         // List of preset songs
         //TODO: More formatted presentation
         //STRETCH: Turn into a basic song library 
