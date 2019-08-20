@@ -81,29 +81,17 @@ text { fill: #aaa; font-size: 14px; text-anchor: middle; dominant-baseline: math
 .key-selector .activeNode { color: white; }
 
 .activeNode[data-key="C"]    { fill: #b30469; stroke: #b30469; background: #b30469; border-color: #b30469; }
-.activeNode[data-key="सा"]  { fill: #b30469; stroke: #b30469; background: #b30469; border-color: #b30469; }
 .activeNode[data-key="Db"]   { fill: #822b9b; stroke: #822b9b; background: #822b9b; border-color: #822b9b; }
-.activeNode[data-key="रेb"]  { fill: #822b9b; stroke: #822b9b; background: #822b9b; border-color: #822b9b; }
 .activeNode[data-key="D"]    { fill: #5053cd; stroke: #5053cd; background: #5053cd; border-color: #5053cd; }
-.activeNode[data-key="रे"]   { fill: #5053cd; stroke: #5053cd; background: #5053cd; border-color: #5053cd; }
 .activeNode[data-key="Eb"]   { fill: #1f7aff; stroke: #1f7aff; background: #1f7aff; border-color: #1f7aff; }
-.activeNode[data-key="गb"]   { fill: #1f7aff; stroke: #1f7aff; background: #1f7aff; border-color: #1f7aff; }
 .activeNode[data-key="E"]    { fill: #258dab; stroke: #258dab; background: #258dab; border-color: #258dab; }
-.activeNode[data-key="ग"]    { fill: #258dab; stroke: #258dab; background: #258dab; border-color: #258dab; }
 .activeNode[data-key="F"]    { fill: #2ba058; stroke: #2ba058; background: #2ba058; border-color: #2ba058; }
-.activeNode[data-key="म"]    { fill: #2ba058; stroke: #2ba058; background: #2ba058; border-color: #2ba058; }
 .activeNode[data-key="Gb"]   { fill: #31b304; stroke: #31b304; background: #31b304; border-color: #31b304; }
-.activeNode[data-key="पb"]   { fill: #31b304; stroke: #31b304; background: #31b304; border-color: #31b304; }
 .activeNode[data-key="G"]    { fill: #76a90d; stroke: #76a90d; background: #76a90d; border-color: #76a90d; }
-.activeNode[data-key="प"]    { fill: #76a90d; stroke: #76a90d; background: #76a90d; border-color: #76a90d; }
 .activeNode[data-key="Ab"]   { fill: #e6bd00; stroke: #e6bd00; background: #e6bd00; border-color: #e6bd00; }
-.activeNode[data-key="धb"]   { fill: #e6bd00; stroke: #e6bd00; background: #e6bd00; border-color: #e6bd00; }
 .activeNode[data-key="A"]    { fill: #ff941f; stroke: #ff941f; background: #ff941f; border-color: #ff941f; }
-.activeNode[data-key="ध"]    { fill: #ff941f; stroke: #ff941f; background: #ff941f; border-color: #ff941f; }
 .activeNode[data-key="Bb"]   { fill: #e66438; stroke: #e66438; background: #e66438; border-color: #e66438; }
-.activeNode[data-key="निb"]  { fill: #e66438; stroke: #e66438; background: #e66438; border-color: #e66438; }
 .activeNode[data-key="B"]    { fill: #cc3450; stroke: #cc3450; background: #cc3450; border-color: #cc3450; }
-.activeNode[data-key="नि"]   { fill: #cc3450; stroke: #cc3450; background: #cc3450; border-color: #cc3450; }
 
 .record { width: 100%; margin: 12px 20px 32px; text-align: center; }
 .record button { border: none; background: #ddd; border-radius: 4px; line-height: 32px;

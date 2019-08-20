@@ -43,7 +43,7 @@ const strings = {
     rotate: '180° Rotieren',
     translate: 'Verschieben',
     connected: 'Dieses Tonnetz ist nicht verbunden, und enthält nicht alle Noten.',
-    notes: ['A', 'Bb', 'B', 'C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab']
+    notes: ['A', 'B', 'H', 'C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab']
   },
   fr: {
     title: 'Le Tonnetz',
@@ -272,7 +272,7 @@ let noteTonnetz = {
     template: `
         <g>
             <circle v-bind:class="{activeNode:isActive, visitedNode:semiActive}"
-                r="12" v-bind:data-key="notes[0].text">
+                r="12" v-bind:data-key="notes[0].id">
             </circle> 
             <text>
                 {{ notes[0].text }}
@@ -907,7 +907,7 @@ let noteChicken = {
     },
     template: `
         <polygon v-bind:class="{activeNode:isActive, visitedNode:semiActive}" 
-            v-bind:points="points" v-bind:data-key="notes[0].text"/>
+            v-bind:points="points" v-bind:data-key="notes[0].id"/>
         `
 }
 
@@ -959,7 +959,7 @@ let noteClock = {
     mixins: [activableMixin],
     template: `
         <g>
-            <circle v-bind:class="{activeNode:isActive}" r="24" v-bind:data-key="notes[0].text">
+            <circle v-bind:class="{activeNode:isActive}" r="24" v-bind:data-key="notes[0].id">
             </circle> 
             <text>
                 {{ notes[0].text }}
@@ -1083,7 +1083,10 @@ var proto = new Vue({
         // The type of representation for the main window ('tonnetz' or 'chicken')
         type: 'tonnetz',
         // The list of all notes: their name and their status
-        notes: (strings[language] || strings.en).notes.map(s => { return {text: s, count: 0}; }),
+        notes: (strings[language] || strings.en).notes.map( function(note_name_local, index) { 
+            // use text for display and id for CSS styling
+            return {text: note_name_local, id: strings.en.notes[index], count: 0};
+        }),
 
         // List of preset songs
         //TODO: More formatted presentation
