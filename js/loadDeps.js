@@ -1,74 +1,80 @@
 /* Loads libraries required by the application using fallback
 First attempt to retrieve them online, otherwise load local copies */
 
+// Find the script's directory to use paths relative to it and not the html
+let scripts= document.getElementsByTagName('script');
+let path= scripts[scripts.length-1].src.split('?')[0];      // remove any ?query
+let mydir= path.split('/').slice(0, -1).join('/')+'/';  // remove last filename part of path
+
 fallback.load({
     //Vue: Main framework for reactive elements
     Vue: [
         'https://cdn.jsdelivr.net/npm/vue/dist/vue.js',
-        'lib/Vue/vue.min.js'
+        mydir+'../lib/Vue/vue.min.js'
     ],
     //JZZ: Midi library
     JZZ: [
         'https://cdn.jsdelivr.net/npm/jzz',
-        'lib/JZZ/jzz.js'
+        mydir+'../lib/JZZ/jzz.js'
     ],
     //JZZ.Tiny: Basic Synthetizer
     'JZZ.synth.Tiny': [
         'https://cdn.jsdelivr.net/npm/jzz-synth-tiny',
-        'lib/JZZ/JZZ.synth.Tiny.min.js'
+        mydir+'../lib/JZZ/JZZ.synth.Tiny.min.js'
     ],
     //JZZ.Kbd: Keyboard bindings and virtual piano keyboard
     'JZZ.input.Kbd': [
         'https://cdn.jsdelivr.net/npm/jzz-input-kbd',
-        'lib/JZZ/jzz-input-kbd.js'
+        mydir+'../lib/JZZ/jzz-input-kbd.js'
     ],
     //JZZ.SMF: Standard Midi File support
     'JZZ.MIDI.SMF': [
         'https://cdn.jsdelivr.net/npm/jzz-midi-smf',
-        'lib/JZZ/jzz-midi-smf.js'
+        mydir+'../lib/JZZ/jzz-midi-smf.js'
     ],
     TweenLite: [
         'https://cdnjs.cloudflare.com/ajax/libs/gsap/1.18.0/TweenLite.min.js',
-        'lib/GSAP'
+        mydir+'../lib/GSAP'
     ],
     //TODO: Use proper submodule structure
     // Tonnetz submodules
     // Small hack: these variables are defined to let fallback know that the module loaded
     'Tonnetz_utils':[
-        'js/utils.js'
+        mydir+'utils.js'
     ],
     'Tonnetz_l12n':[
-        'js/l12n.js'
+        mydir+'l12n.js'
     ],
     'Tonnetz_mixins':[
-        'js/mixins/clickMixins.js'
+        mydir+'mixins/clickMixins.js'
     ],
     'Tonnetz_trajectory':[
-        'js/mixins/trajectory.js'
+        mydir+'mixins/trajectory.js'
     ],
     'Tonnetz_dragZoom':[
-        'js/decorators/dragZoom.js'
+        mydir+'decorators/dragZoom.js'
     ],
     'Tonnetz_piano':[
-        'js/components/pianoKeyboard.js'
+        mydir+'components/pianoKeyboard.js'
     ],
     'Tonnetz_loader':[
-        'js/components/songLoader.js'
+        mydir+'components/songLoader.js'
     ],
     'Tonnetz_tonnetzLike':[
-        'js/components/tonnetzLike.js'
+        mydir+'components/tonnetzLike.js'
     ],
     'Tonnetz_clockOctave':[
-        'js/components/clockOctave.js'
+        mydir+'components/clockOctave.js'
     ],
     'Tonnetz_playRecorder':[
-        'js/components/playRecorder.js'
+        mydir+'components/playRecorder.js'
     ],
     'Tonnetz_midiBus':[
-        'js/midiBus.js'
+        mydir+'midiBus.js'
     ],
     'Tonnetz_tonnetzView':[
-        'js/components/tonnetzView.js'
+        mydir+'components/tonnetzView.js'
+        'components/tonnetzView.js'
     ]
 },{
     shim:{
