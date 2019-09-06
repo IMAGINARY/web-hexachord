@@ -67,21 +67,11 @@ proto = new Vue({
         // The type of representation for the main window ('tonnetz' or 'chicken')
         type: 'tonnetz',
         // The list of all notes: their name and their status
-        notes: [
-            {text: 'A',  count:0},
-            {text: 'A♯', count:0},
-            {text: 'B',  count:0},
-            {text: 'C',  count:0},
-            {text: 'C♯', count:0},
-            {text: 'D',  count:0},
-            {text: 'D♯', count:0},
-            {text: 'E',  count:0},
-            {text: 'F',  count:0},
-            {text: 'F♯', count:0},
-            {text: 'G',  count:0},
-            {text: 'G♯', count:0}
-        ],
-
+        notes: Array.from(Array(12),(_x,index) => ({id:index,count:0})),
+        // notes: (strings[language] || strings.en).notes.map( function(note_name_local, index) { 
+        //     // use text for display and id for CSS styling
+        //     return {text: note_name_local, id: strings.en.notes[index], count: 0};
+        // }),
         // Synthetiser engine
         //TODO: Find a way to have nice output on Safari and Firefox
         synth: JZZ.synth.Tiny(),

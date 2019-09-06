@@ -2,12 +2,17 @@
 // Note component : a clickable circle with the note name
 let noteClock = {
     mixins: [activableMixin],
+    computed: {
+        strings:function(){
+            return this.$root.strings
+        }
+    },
     template: `
         <g class=noteClock>
-            <circle v-bind:class="{activeNode:isActive}" v-bind:data-key="notes[0].text">
+            <circle v-bind:class="{activeNode:isActive}" v-bind:data-key="notes[0].id">
             </circle> 
             <text>
-                {{ notes[0].text }}
+                {{ strings.notes[notes[0].id] }}
             </text>
         </g>
         `

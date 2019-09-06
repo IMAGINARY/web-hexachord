@@ -2,13 +2,18 @@
 // Note component : a clickable circle with the note name
 let noteTonnetz = {
     mixins: [activableMixin],
+    computed:{
+        strings: function (){
+            return this.$root.strings
+        }
+    },
     template: `
         <g class="tonnetzNote">
             <circle v-bind:class="{activeNode:isActive, visitedNode:semiActive}"
-                v-bind:data-key="notes[0].text">
+                v-bind:data-key="notes[0].id">
             </circle> 
             <text>
-                {{ notes[0].text }}
+                {{ strings.notes[notes[0].id] }}
             </text>
         </g>
         `
@@ -212,15 +217,19 @@ let trichordChicken = {
     extends: chord,
     props: ['id'],
     computed: {
+        strings: function (){
+            return this.$root.strings
+        },
         text: function(){
             //Is this a major or minor chord ?
             //I.E. is the matching triangle in the Tonnetz right- or left-pointed
             //TODO: This is more than just minor or major, we have to clarify
+            //FIXME: Adapt for localisable chord designations
             var major = (this.shape[0].y == this.shape[1].y);
             if (major){
-                return this.notes[2].text; // notes[2] is the root
+                return this.strings.notes[this.notes[2].id]; // notes[2] is the root
             }else{
-                var display = this.notes[2].text;
+                var display = this.strings.notes[this.notes[2].id];
                 return display[0].toLowerCase() + display.substring(1); //Uncapitalize the root, leave the alteration
             }
         }
@@ -295,7 +304,7 @@ let noteChicken = {
     },
     template: `
         <polygon v-bind:class="{activeNode:isActive, visitedNode:semiActive}" class="chickenNote" 
-            v-bind:points="points" v-bind:data-key="notes[0].text"/>
+            v-bind:points="points" v-bind:data-key="notes[0].id"/>
         `
 }
 
