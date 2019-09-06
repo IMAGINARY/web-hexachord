@@ -14,7 +14,7 @@
 let timeout = null;
 function restartTimeout() {
   clearTimeout(timeout);
-  timeout = setTimeout(() => window.location.reload(), 1000 * 120); // 2 mins
+//   timeout = setTimeout(() => window.location.reload(), 1000 * 120); // 2 mins
 }
 document.addEventListener('touchdown', restartTimeout);
 document.addEventListener('mousemove', restartTimeout);
