@@ -112,6 +112,7 @@ proto = new Vue({
     methods:{
         //Handler for JZZ device change event
         deviceUpdate: function({inputs:{added,removed}}){
+            //FIXME: gets recursively called until stack overflow
             //TODO: replace log by a small info message on screen
             console.log('Updating MIDI devices');
             if(added){
