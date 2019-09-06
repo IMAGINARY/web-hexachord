@@ -74,7 +74,9 @@ fallback.load({
     ],
     'Tonnetz_tonnetzView':[
         mydir+'components/tonnetzView.js'
-        'components/tonnetzView.js'
+    ],
+    'Tonnetz_intervalTable':[
+        mydir+'components/intervalTable.js'
     ]
 },{
     shim:{

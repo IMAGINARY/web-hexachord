@@ -57,7 +57,7 @@ fallback.ready(function(){
 proto = new Vue({
     //TODO: break up some functions into separate components
     el: '#proto',
-    components: {clockOctave,songLoader,pianoKeyboard,playRecorder,tonnetzView,languageSelector},
+    components: {clockOctave,songLoader,pianoKeyboard,playRecorder,tonnetzView,languageSelector,intervalTable},
     data: {
         // The list of all 3-interval Tonnetze
         //TODO: Move to non-reactive data
