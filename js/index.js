@@ -96,7 +96,7 @@ proto = new Vue({
     },
     computed:{
         complementNotes: function(){
-            return this.notes.map(note => ({text:note.text, count:note.count?0:1}));
+            return this.notes.map(note => ({id:note.id, count:note.count?0:1}));
         },
         strings: function(){
             return strings[this.language]
