@@ -14,7 +14,6 @@ fallback.load({
     ],
     //JZZ: Midi library
     JZZ: [
-        //FIXME: with JZZ 0.8.9 or above, plugging or unplugging an input sets an infinite loop
         'https://cdn.jsdelivr.net/npm/jzz@0.8.8/javascript/JZZ.min.js',
         mydir+'../lib/JZZ/jzz.js'
     ],

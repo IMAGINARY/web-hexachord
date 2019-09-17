@@ -25,7 +25,6 @@ let tonnetzSelector = {
         tonnetze:tonnetze3,
     }},
     computed:{
-        // TODO: cleaner access to localisation strings
         strings: function(){return this.$root.strings}
     },
     template:`
@@ -62,7 +61,6 @@ let tonnetzView = {
             type:Array,
             required: true
         },
-        // TODO: add controls for that and use as data
         // Should we draw the trajectory ?
         trace:{
             type:Boolean,
@@ -79,9 +77,7 @@ let tonnetzView = {
             type: this.initType
         },
         // Should drag and zoom be locked ?
-        // TODO: add controls for that
         lock: true,
-        // TODO: cleaner access to localisation strings
         strings:this.$root.strings,
     }},
     computed:{

@@ -1,4 +1,3 @@
-// FIXME: Don't prevent scroll when the view is locked
 // Slotted component that handles the drag and zoom logic on an svg
 let dragZoomSvg = {
     props: {
@@ -14,7 +13,6 @@ let dragZoomSvg = {
         }
     },
     data: function(){return{
-        //TODO: Refactor all coordinates changes into a unified system
         //Transformation data
         tx      : 0,
         ty      : 0,
@@ -94,7 +92,6 @@ let dragZoomSvg = {
             return
         },
         // Centers the view to the (SVG) coordinates specified
-        // TODO: Finer logic for camera panning (move if moving close to the edges)
         panTo: function(targetPosition){
             if(targetPosition.x > this.bounds.xmin && targetPosition.x < this.bounds.xmax
              &&targetPosition.y > this.bounds.ymin && targetPosition.y < this.bounds.ymax)

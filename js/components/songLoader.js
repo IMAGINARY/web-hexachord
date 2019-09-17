@@ -6,7 +6,6 @@ let songLoader = {
     },
     data: function(){return {
         // List of preset songs
-        //TODO: More formatted presentation
         //STRETCH: Turn into a basic song library 
         files: [
             {
@@ -82,7 +81,6 @@ let songLoader = {
             this.$emit('load', JZZ.lib.fromBase64(data), 'Base64 data');
         },
     },
-    //TODO: Use localisation strings here too
     template: `
     <div>
         <div class="modal-background" v-on:click="$emit('cancel')"></div>
@@ -94,7 +92,7 @@ let songLoader = {
                 </button>
                 <br/>
             </template>
-            <!-- TODO: repair
+            <!-- 
             <form v-on:submit.prevent='fromURL()'>
                 <input type=text id=url value='https://jazz-soft.net/demo/midi/furelise.mid' size=80>
                 <button type=submit>Load from URL</button>

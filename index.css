@@ -93,7 +93,6 @@ text { fill: #aaa; font-size: 14px; text-anchor: middle; dominant-baseline: math
     border-radius: 20px; font-weight: 700; }
 .key-selector .activeNode { color: white; }
 
-/* TODO: Start indexing notes with the usual C=0 */
 .activeNode[data-key="3"]  { fill: #b30469; stroke: #b30469; background: #b30469; border-color: #b30469; }
 .activeNode[data-key="4"] { fill: #822b9b; stroke: #822b9b; background: #822b9b; border-color: #822b9b; }
 .activeNode[data-key="5"]  { fill: #5053cd; stroke: #5053cd; background: #5053cd; border-color: #5053cd; }

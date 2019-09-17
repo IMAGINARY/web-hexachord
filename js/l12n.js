@@ -51,7 +51,6 @@ const strings = {
     rotate: 'Rotation à 180°',
     translate: 'Translation',
     connected: "Ce Tonnetz n'est pas connexe et ne contient pas toutes les notes.",
-    // TODO: Adjust font size according to locale
     notes: ['La', 'La♯', 'Si', 'Do', 'Do♯', 'Ré', 'Ré♯', 'Mi', 'Fa', 'Fa♯', 'Sol', 'Sol♯']
   },
   hi: {

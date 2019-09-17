@@ -1,6 +1,4 @@
 // A wrapper component for JZZ's keyboard element
-
-//TODO: Add props to customize the keyboard
 let pianoKeyboard = {
     props:{
         id:{
@@ -26,7 +24,6 @@ let pianoKeyboard = {
                     this.getBlackKeys().setStyle({color:'#fff'});
 
                     if(this.keybinds){
-                    //TODO: probe keyboard layout instead of static keybinds
                     this.getKey('C5').setInnerHTML('<span class=inner>W</span>');
                     this.getKey('C#5').setInnerHTML('<span class=inner>S</span>');
                     this.getKey('D5').setInnerHTML('<span class=inner>X</span>');
@@ -41,7 +38,6 @@ let pianoKeyboard = {
                     }
                 }
             });
-        // TODO: Pass the bus as a prop
         midiBus.midiThru.connect(piano);
         piano.connect(midiBus.midiThru);
     }

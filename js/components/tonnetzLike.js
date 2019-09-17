@@ -143,7 +143,6 @@ let tonnetzLike = {
             });
         },
         // Returns the svg transform string corresponding to a node's position
-        //TODO: Rename
         position: function(node){
             let {x,y} = logicalToSvg(node)
             return `translate(${x} ${y})`
@@ -210,7 +209,6 @@ let tonnetzPlan = {
 }
 
 // ----------------------- Chicken Wire ---------------------------
-// TODO: Lots of duplicated code: factorize !
 
 // The chicken-wire's trichord component : a clickable circle representing the chord
 let trichordChicken = {
@@ -223,8 +221,6 @@ let trichordChicken = {
         text: function(){
             //Is this a major or minor chord ?
             //I.E. is the matching triangle in the Tonnetz right- or left-pointed
-            //TODO: This is more than just minor or major, we have to clarify
-            //FIXME: Adapt for localisable chord designations
             var major = (this.shape[0].y == this.shape[1].y);
             if (major){
                 return this.strings.notes[this.notes[2].id]; // notes[2] is the root

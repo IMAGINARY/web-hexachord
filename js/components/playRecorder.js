@@ -1,10 +1,8 @@
-
-//TODO: Poor name
 let playRecorder = {
     components: {songLoader},
     data: function(){return{
         // The Midi player provided by JZZ
-        player: {playing:false, play:noop, pause:noop, stop: noop, resume:noop}, // TODO: replace by a dummy player
+        player: {playing:false, play:noop, pause:noop, stop: noop, resume:noop},
         // Is recording in progress?
         recording: false,
         // Is the modal window open?
@@ -14,7 +12,6 @@ let playRecorder = {
         recording:false
     }},
     computed:{
-        // TODO: cleaner access to localisation strings
         strings: function(){return this.$root.strings}
     },
     methods:{
@@ -39,10 +36,8 @@ let playRecorder = {
             }
             setTimeout(this.resetNotes,10); // Reset in a timer in case some timers could not be cleared
             //This can occur when some events'handling are queued behind this function
-            //TODO: Find if there is a way to clear queued events to handle this more cleanly
         },
         // Loads a Midi File from its byte representation
-        //TODO: encapsulate this in a loader component
         load: function(data, name) {
             this.modal=false;
             this.resetNotes();
@@ -70,21 +65,19 @@ let playRecorder = {
             this.player.connect(midiBus.midiThru);
             this.resetNotes();
         },
-        //TODO: Fix 0.5 s slowdown
         rotate: function(){
             this.stop()
             this.rotateTrajectory(this.SMF);
-            // TODO: Does the player really need to be reassigned ?
+            // Does the player really need to be reassigned ?
             this.player=this.SMF.player();
             this.player.connect(midiBus.midiThru);
 
             this.player.play();
         },
-        //TODO: Fix 0.5 s slowdown
         translate: function(translate=1){
             this.stop()
             this.translateTrajectory(this.SMF,translate);
-            // TODO: Does the player really need to be reassigned ?
+            // Does the player really need to be reassigned ?
             this.player=this.SMF.player();
             this.player.connect(midiBus.midiThru);
 
@@ -93,7 +86,6 @@ let playRecorder = {
         //Simple version operating on pitches alone
         rotateTrajectory : function (SMF) {
             for (SMFTrack of SMF){
-                //TODO: ignore drums track since midi pitch has a different meaning there
                 let symmetryCenter = undefined;
                 for (SME of SMFTrack){
                     let note = SME.getNote();

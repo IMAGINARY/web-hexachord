@@ -36,7 +36,6 @@ let traceHandler = {
             this.resetTrajectory();
         },
         intervals : function(){// If intervals changes, the current trajectory is no longer valid
-            //TODO: recalculate a valid trajectory ?
             this.resetTrajectory();
         }
     },
@@ -78,7 +77,6 @@ let traceHandler = {
         },
         //Returns the node matching the note closest to the provided node
         closestNode(node,note){
-            // TODO: compute closest between nodes/note sets
             // Dumb way: enumerate all neighbours up to distance 3 (max for 12 tone Tonnetze)
             const d1 = [{x:0,y:1},{x:0,y:-1},{x:1,y:0},{x:-1,y:0},{x:-1,y:1},{x:1,y:-1}]; // Neighbours of distance 1
             const d2 = [{x:0,y:2},{x:1,y:1},{x:0,y:2},{x:0,y:-2},{x:-1,y:-1},{x:-2,y:0}, //z=0
@@ -101,7 +99,6 @@ let traceHandler = {
         },
         // Marks active chords as visited
         updateChords: function(){
-            //TODO: Check only changed nodes.
             for(node of this.active){
                 for(dnode of [{x:1,y:0},{x:0,y:1},{x:-1,y:1}]){
                     if(this.active.some(nodeB => nodeB.x==node.x+dnode.x && nodeB.y==node.y+dnode.y)){
@@ -121,8 +118,6 @@ let traceHandler = {
         addToTrajectory: function(pitches){
             if(this.trace){
                 // First version: consider multi-pitched events as successive events
-                // TODO: group midi events in close succession for processing (faster and better trajectory)
-                // TODO: override position if the event comes from playing the Tonnetz
                 for(pitch of pitches){
                     //Check if the note is reachable in this Tonnetz
                     let noteNumber = mod(pitch - 9,12);
@@ -156,7 +151,6 @@ let traceHandler = {
                 }
             }
         },
-        //TODO: Override for events generated from within the Tonnetz (position is known)
         midiDispatch: function(midiEvent){
             if(this.trace){
                 let index = record.length       

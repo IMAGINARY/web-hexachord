@@ -4,10 +4,6 @@
 // Vue.config.performance = true
 
 
-//TODO: Add credit info, with paper to cite
-
-
-
 // ============================================================================
 
 // Reload the screen after 2 minutes of inactivity.
@@ -35,7 +31,6 @@ const logicalToSvg = node => ({x:logicalToSvgX(node), y:logicalToSvgY(node)})
 // ============================================================================
 // Vue components and mixins
 
-//TODO: Restructure to avoid having to forward declare it.
 var piano; //Variable to hold the virtual piano (built later once JZZ is loaded)
 //var midiBus; //Variable to hold the bus for upgoing midiEvents (built once Vue is loaded)
 var proto; //Variable to hold the main app Object (built once everything is loaded)
@@ -43,7 +38,6 @@ var proto; //Variable to hold the main app Object (built once everything is load
 
 
 // Global object to store recording and its state
-//TODO: Make into an true object with methods
 var record = {
     startTime:undefined,
     SMF:undefined,
@@ -55,12 +49,10 @@ fallback.ready(function(){
 
 // The App's main object, handling global concerns
 proto = new Vue({
-    //TODO: break up some functions into separate components
     el: '#proto',
     components: {clockOctave,songLoader,pianoKeyboard,playRecorder,tonnetzView,languageSelector,intervalTable},
     data: {
         // The list of all 3-interval Tonnetze
-        //TODO: Move to non-reactive data
         tonnetze: tonnetze3,
         // The selected interval set
         intervals: tonnetze3[9],
@@ -73,7 +65,6 @@ proto = new Vue({
         //     return {text: note_name_local, id: strings.en.notes[index], count: 0};
         // }),
         // Synthetiser engine
-        //TODO: Find a way to have nice output on Safari and Firefox
         synth: JZZ.synth.Tiny(),
         //synth:JZZ.synth.MIDIjs({ 
             //TODO: Use a soundfont from our own server
@@ -82,7 +73,7 @@ proto = new Vue({
                 //.or(function(){ proto.loaded(); alert('Cannot load MIDI.js!\n' + this.err()); })
                 //.and(function(){ proto.loaded(); }),
         // Azerty keyboard bindings
-        ascii: JZZ.input.ASCII({//TODO: Adapt to keyboard layout
+        ascii: JZZ.input.ASCII({
                 W:'C5', S:'C#5', X:'D5', D:'D#5', C:'E5', V:'F5',
                 G:'F#5', B:'G5', H:'Ab5', N:'A5', J:'Bb5', M:'B5'
                 }),
@@ -112,8 +103,6 @@ proto = new Vue({
     methods:{
         //Handler for JZZ device change event
         deviceUpdate: function({inputs:{added,removed}}){
-            //FIXME: gets recursively called until stack overflow
-            //TODO: replace log by a small info message on screen
             console.log('Updating MIDI devices');
             if(added){
                 for(device of added){
@@ -167,7 +156,6 @@ proto = new Vue({
             }
         },
         // Hard reset for the whole page
-        // TODO: switch language without reloading
         reset(option) {
             if(option){
                 window.location.search = '?hl='+option;
