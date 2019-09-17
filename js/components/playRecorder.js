@@ -144,6 +144,22 @@ let playRecorder = {
                     this.SMF[0].add(new Date().getTime()-this.startTime,midiEvent);
                 }
             }
+        },
+        download: function(){
+            let str = this.SMF.dump(); // MIDI file dumped as a string
+            let b64 = JZZ.lib.toBase64(str); // convert to base-64 string
+
+            let uri = 'data:audio/midi;base64,' + b64; // data URI
+            var element = document.createElement('a');
+            element.setAttribute('href', uri);
+            element.setAttribute('download', 'export.mid');
+
+            element.style.display = 'none';
+            document.body.appendChild(element);
+
+            element.click();
+
+            document.body.removeChild(element);
         }
     },
     mounted: function(){
@@ -157,6 +173,7 @@ let playRecorder = {
             <button id=recordButton @click='recordToggle'>{{ recording ? strings.stopRecord : strings.start }}</button>
             <button v-show="SMF" id=rotate @click='rotate'>{{ strings.rotate }}</button>
             <button v-show="SMF" id=translate @click='translate(1)'>{{ strings.translate }}</button>
+            <button v-show="SMF" id=export @click='download'>{{ strings.export }}</button>
             <song-loader v-show="modal" @load="load" @cancel="modal=false" file-browser></song-loader>
         </div>
     `

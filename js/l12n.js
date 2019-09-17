@@ -15,6 +15,7 @@ const strings = {
     pause: '⏸ Pause',
     rotate: 'Rotate 180°',
     translate: 'Translate',
+    export: 'Export',
     connected: 'This Tonnetz is non-connected and doesn’t contain every note.',
     notes: ['A', 'A♯', 'B', 'C', 'C♯', 'D', 'D♯', 'E', 'F', 'F♯', 'G', 'G♯']
   },
@@ -31,6 +32,7 @@ const strings = {
     pause: '⏸ Pause',
     rotate: '180° Rotieren',
     translate: 'Verschieben',
+    export: 'Exportieren', // Needs checking
     connected: 'Dieses Tonnetz ist nicht verbunden, und enthält nicht alle Noten.',
     notes: ['A', 'B', 'H', 'C', 'C♯', 'D', 'D♯', 'E', 'F', 'F♯', 'G', 'G♯']
   },
@@ -47,6 +49,7 @@ const strings = {
     pause: '⏸ Pause',
     rotate: 'Rotation à 180°',
     translate: 'Translation',
+    export: 'Exporter',
     connected: "Ce Tonnetz n'est pas connexe et ne contient pas toutes les notes.",
     notes: ['La', 'La♯', 'Si', 'Do', 'Do♯', 'Ré', 'Ré♯', 'Mi', 'Fa', 'Fa♯', 'Sol', 'Sol♯']
   },
@@ -63,6 +66,7 @@ const strings = {
     pause: '⏸ Pause',
     rotate: '180° पलटें',
     translate: 'अनुवाद करें',
+    export: 'Export', // Needs translation
     connected: 'इस जोड़ में सभी स्वर नहीं है.',
     notes: ['ध', 'निb', 'नि', 'सा', 'रेb', 'रे', 'गb', 'ग', 'म', 'पb', 'प', 'धb']
   }
