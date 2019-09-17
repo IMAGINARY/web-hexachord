@@ -27,7 +27,7 @@
             <h1 v-cloak>{{ strings.title }}</h1>
             <h2 v-cloak>{{ strings.subtitle }}</h2>
             <language-selector :languages="Object.keys(allStrings)" v-model="language"></language-selector>
-            <div v-cloak class="reset" @click="reset">{{ strings.reset }}</div>
+            <div v-cloak class="reset" @click="reset(language)">{{ strings.reset }}</div>
 
             <div class="columns">
                 <div class="col-1" v-cloak>

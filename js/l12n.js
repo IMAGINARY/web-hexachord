@@ -1,9 +1,6 @@
 // ============================================================================
 // i18n Strings
 
-const search = location.search.match(/hl=(\w*)/);
-const language = search ? search[1] : 'en';
-
 const strings = {
   en: {
     title: 'The Tonnetz',
@@ -70,6 +67,9 @@ const strings = {
     notes: ['ध', 'निb', 'नि', 'सा', 'रेb', 'रे', 'गb', 'ग', 'म', 'पb', 'प', 'धb']
   }
 }
+
+const search = location.search.match(/hl=(\w*)/);
+const language = strings.hasOwnProperty(search) ? search[1] : 'en';
 
 let languageSelector = {
     props:{
