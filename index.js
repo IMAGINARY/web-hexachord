@@ -1180,7 +1180,7 @@ var proto = new Vue({
                 }
                 ;
                 xhttp.overrideMimeType('text/plain; charset=x-user-defined');
-                xhttp.open('GET', encodeURIComponent(url), true);
+                xhttp.open('GET', new URL(url, window.location.href).href, true);
                 xhttp.send();
             } catch (e) {
                 this.loadlog = 'XMLHttpRequest error';
